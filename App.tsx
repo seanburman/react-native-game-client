@@ -6,12 +6,12 @@ import { useState } from 'react';
 import {isEqual} from 'lodash'
 import {Canvas} from './src/components/Canvas/Canvas';
 import { PanGestureHandler, State } from 'react-native-gesture-handler'
+import { CanvasProvider } from './src/components/Canvas/context';
 
 export default function App() {
-  const {} = PanGestureHandler
   const [pickerOpen, setPickerOpen] = useState(false)
   const [color, setColor] = useState<ColorChoice>({
-    HEX: 'FFFFFF', RGBA: {r: 0, g: 0, b:0 ,a: 1, string: ""}
+    HEX: 'FFFFFF', RGBA: {r: 0, g: 0, b:0 ,a: 0, string: ""}
   })
   const [palette, setPalette] = useState<ColorChoice[]>([])
 
@@ -29,9 +29,10 @@ export default function App() {
   return (
     <Provider store={store}>
       <SafeAreaView style={styles.container} >
+        <CanvasProvider>
         <View style={{flexDirection: 'column', flex: 1, paddingTop: 20}}>
                 <View style={{height: 400, width: 400, borderWidth: 1, borderColor: 'black'}}>
-                  <Canvas currentColor={color} width={32} height={32}/>
+                    <Canvas currentColor={color} width={32} height={32}/>
                 </View>
             <View style={{flexDirection: 'column', marginTop: 10}}>
                 <Pressable
@@ -49,17 +50,17 @@ export default function App() {
               </Pressable> */}
 
                 <ColorSelector 
-                  color={color?.HEX || "#FFFFFF"}
-                  onChange={setColor}
+                  color={color?.HEX || "transparent"}
                   open={pickerOpen}
+                  onChange={setColor}
                 />
               {/* <Palette
                 colors={palette}
                 onPress={handlePaletteRemove}
               /> */}
             </View>
-
         </View>
+        </CanvasProvider>
       </SafeAreaView>
     </Provider>
   );

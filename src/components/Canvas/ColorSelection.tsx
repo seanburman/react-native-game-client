@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { Pressable, TextInput, View } from 'react-native'
+import { Pressable, View } from 'react-native'
 import ColorPicker from 'react-native-wheel-color-picker'
+import { useCanvas } from './context'
 
-type RGBA = {
+export type RGBA = {
     r: number,
     g: number,
     b: number,
@@ -45,13 +45,15 @@ body[0].style.overscrollBehavior = "none"
 body[0].style.overflow = "hidden"
 
 interface ColorSelectionProps {
-  onChange: (color: ColorChoice) => void
   open: boolean
   color: string
+  onChange: (color: ColorChoice) => void
 }
 
 const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps) => {
+    const {setCurrentColor} = useCanvas()
     function handleChange(hex: string) {
+      setCurrentColor(parseColorChoice(hex))
       props.onChange(parseColorChoice(hex))
     }
     return (
