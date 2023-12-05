@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { useEffect } from "react";
 import { PanGestureHandler, TapGestureHandler } from 'react-native-gesture-handler'
-import { ColorChoice } from "./ColorSelection";
+import { ColorChoice } from "../ColorSelection";
 import { useCanvas } from "./context";
 
 export interface OldCanvasProps {
@@ -11,7 +11,6 @@ export interface OldCanvasProps {
 }
 
 export const Canvas: React.FC<OldCanvasProps>= (props: OldCanvasProps) => {
-
     const {
         pixels,
         pixelDimensions,

@@ -1,9 +1,9 @@
-import { SafeAreaView, StyleSheet} from 'react-native';
+import { StyleSheet} from 'react-native';
 import {WebView} from 'react-native-webview'
-import { useAuthenticateGameMutation, useCreateGameSessionMutation } from '../redux/authSlice';
+import { useAuthenticateGameMutation, useCreateGameSessionMutation } from '../../redux/authSlice';
 import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
-import {store} from '../redux/store'
+import {store} from '../../redux/store'
 
 export default function Game() {
   const [authenticate, authRes]= useAuthenticateGameMutation()

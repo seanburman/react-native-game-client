@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { ColorChoice, RGBA } from "./ColorSelection"
+import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { ColorChoice } from "../ColorSelection"
 import { LayoutRectangle } from "react-native"
-import { cloneDeep, every } from "lodash"
+import { cloneDeep } from "lodash"
 
 export type PixelProps = {
     color: ColorChoice | undefined,
