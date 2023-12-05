@@ -47,10 +47,9 @@ body[0].style.overscrollBehavior = "none"
 body[0].style.overflow = "hidden"
 
 interface ColorSelectionProps {
-  open: boolean
-  color: string
-  onChange: (color: ColorChoice) => void
-  close: () => void
+  color: string,
+  onPress?: () => void,
+  onChange?: (color: ColorChoice) => void,
 }
 
 const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps) => {
@@ -60,25 +59,32 @@ const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps
 
   function handleChange(hex: string) {
     setCurrentColor(parseColorChoice(hex))
+    if(props.onChange)
     props.onChange(parseColorChoice(hex))
+  }
+
+  function handlePress() {
+    if (props.onPress) {
+      props.onPress()
+    }
   }
 
   return (
     <>
-    <View
-    style={{
-      borderWidth: 1,
-      borderColor: '#000000'
-    }}>
+    <Pressable
+      style={{
+        width: '100%',
+        height: '100%'
+      }}
+      onPress={handlePress}>
       <Pressable
         style={{
-          width: 64, 
-          height: 64, 
-          flex: 1, 
+          flex: 1,
+          borderRadius: 12,
           backgroundColor: currentColor?.HEX,
         }} 
         onPress={() => setOpen(!open)}/>
-    </View>
+    </Pressable>
       {
             open &&
             <Modal
@@ -120,8 +126,9 @@ const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps
                           backgroundColor: 'white',
                           marginTop: 0}}>
                         <ColorPicker
+                            onColorChange={handleChange}
                             onColorChangeComplete={handleChange}
-                            color={props.color}
+                            color={currentColor?.HEX}
                             palette={["#FFFFFF"]}
                             swatches/>
                         </View>

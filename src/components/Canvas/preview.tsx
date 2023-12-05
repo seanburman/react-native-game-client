@@ -8,13 +8,12 @@ interface Props {
 
 export default function CanvasPreview({width, height}: Props) {
     const {pixels, canvasResolution} = useCanvas()
-    if(!(pixels && canvasResolution)) {
-        return
-    }
+
     return (
         <View
         style={{
-            flex: 1,
+            width: width + 2,
+            height: height + 2,
             borderWidth: 1,
             borderColor: '#000000',
         }}>
@@ -26,11 +25,12 @@ export default function CanvasPreview({width, height}: Props) {
                 height: height,
             }}>
                 {
-                    pixels?.map((p, i) => (
+                    canvasResolution && pixels &&
+                    pixels.map((p, i) => (
                         <View
                             style={{
-                                width: width/canvasResolution.columns,
-                                height: height/canvasResolution.rows,
+                                width: width/canvasResolution?.columns,
+                                height: height/canvasResolution?.rows,
                                 backgroundColor: p.color?.HEX
                             }}
                             key={i}/>

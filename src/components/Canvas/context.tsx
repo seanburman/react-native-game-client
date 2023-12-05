@@ -38,6 +38,8 @@ type CanvasContextData = {
     isTouched: PixelCoords | undefined,
     // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined,
+    // Consumed by canvas to toggle grid view
+    grid: boolean,
     // To be consumed by future implementations
     touchCoords: TouchCoords | undefined,
 }
@@ -51,6 +53,10 @@ export type CanvasContextState = CanvasContextData & {
     setTouchCoords: (coords: TouchCoords | undefined) => void,
     // Set by ColorSelection
     setCurrentColor: (color: ColorChoice) => void,
+    // Clears the canvas
+    clearCanvas: () => void,
+    // Toggles grid
+    setGrid: (on: boolean) => void
 }
 
 const CanvasContext = createContext<CanvasContextState | undefined>(undefined)
@@ -63,6 +69,7 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
     const [pixels, setPixels] = useState<PixelProps[]>()
     const [isTouched, setIsTouched] = useState<PixelCoords>()
     const [currentColor, _setCurrentColor] = useState<ColorChoice>()
+    const [grid, setGrid] = useState(true)
 
     const setCanvasResolution = useCallback((resolution: CanvasResolution) => {
         if(resolution.columns < 4 || resolution.rows < 4) {
@@ -135,6 +142,21 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         }
         _setCurrentColor(color)
     },[])
+
+    const clearCanvas = useCallback(() => setPixels(newPixels()),[])
+
+    const newPixels = () => {
+        if(!(canvasResolution && pixelDimensions)) {
+            return
+        }
+        let newPixels: PixelProps[] = []
+        for(let i=0; i<canvasResolution.columns * canvasResolution.rows; i++) {
+            newPixels = [...newPixels, {
+                color: undefined,
+            }]
+        }
+        return newPixels
+    }
     
     // Set pixel dimensions as calculated by Canvas containing View
     // and the dimensions of the canvas in pixels
@@ -151,17 +173,11 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
     // Create new PixelProps for rendering in containing view
     useEffect(() => {
         // Don't create new pixels if they already exist
-        if(pixels || !(canvasResolution && pixelDimensions)) {
+        if(pixels) {
             return
         }
-        let newPixels: PixelProps[] = []
-        for(let i=0; i<canvasResolution.columns * canvasResolution.rows; i++) {
-            newPixels = [...newPixels, {
-                color: undefined,
-            }]
-        }
-        setPixels(newPixels)
-    },[canvasLayout, canvasResolution, pixelDimensions])
+        setPixels(newPixels())
+    },[pixels, canvasLayout, canvasResolution, pixelDimensions])
 
     const canvasContextValue: CanvasContextState = {
         pixels,
@@ -170,10 +186,13 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         pixelDimensions,
         isTouched,
         currentColor,
+        grid,
         setCanvasResolution,
         setCanvasLayout,
         setTouchCoords,
         setCurrentColor,
+        clearCanvas,
+        setGrid,
     }
     return <CanvasContext.Provider value={canvasContextValue}>{children}</CanvasContext.Provider>
 }

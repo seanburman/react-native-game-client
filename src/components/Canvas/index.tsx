@@ -1,19 +1,18 @@
 import { View } from "react-native";
 import { useEffect } from "react";
 import { PanGestureHandler, TapGestureHandler } from 'react-native-gesture-handler'
-import { ColorChoice } from "../ColorSelection";
 import { useCanvas } from "./context";
 
-export interface OldCanvasProps {
-    currentColor: ColorChoice,
-    width: number,
-    height: number,
+export interface CanvasProps {
+    columns: number,
+    rows: number,
 }
 
-export const Canvas: React.FC<OldCanvasProps>= (props: OldCanvasProps) => {
+export const Canvas: React.FC<CanvasProps>= (props: CanvasProps) => {
     const {
         pixels,
         pixelDimensions,
+        grid,
         setCanvasResolution, 
         setCanvasLayout,
         setTouchCoords,
@@ -28,8 +27,8 @@ export const Canvas: React.FC<OldCanvasProps>= (props: OldCanvasProps) => {
     }
 
     useEffect(() => {
-        setCanvasResolution({columns: props.width, rows: props.height})
-    },[props.width, props.height])
+        setCanvasResolution({columns: props.columns, rows: props.rows})
+    },[props.columns, props.rows])
 
     return (
         <TapGestureHandler
@@ -61,7 +60,10 @@ export const Canvas: React.FC<OldCanvasProps>= (props: OldCanvasProps) => {
                                 style={{
                                     width: pixelDimensions?.width,
                                     height: pixelDimensions?.height,
-                                    backgroundColor: p.color?.HEX
+                                    backgroundColor: p.color?.HEX,
+                                    borderBottomWidth: grid ? 1 : 0,
+                                    borderRightWidth: grid ? 1 : 0,
+                                    borderColor: 'rgba(0,0,0,.25)',
                                 }}
                                 key={i}/>
                         ))
