@@ -54,8 +54,7 @@ export const Canvas: React.FC<OldCanvasProps>= (props: OldCanvasProps) => {
                     style={{
                         flex: 1,
                         flexDirection: 'row',
-                        flexWrap: 'wrap'
-                    }}>
+                        flexWrap: 'wrap'}}>
                     {
                         pixels?.map((p, i) => (
                             <View

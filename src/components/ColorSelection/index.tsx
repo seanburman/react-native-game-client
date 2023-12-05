@@ -55,7 +55,8 @@ interface ColorSelectionProps {
 
 const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps) => {
   const [modalLayout, setModalLayout] = useState<LayoutRectangle>()
-  const {setCurrentColor} = useCanvas()
+  const {currentColor, setCurrentColor} = useCanvas()
+  const [open, setOpen] = useState(false)
 
   function handleChange(hex: string) {
     setCurrentColor(parseColorChoice(hex))
@@ -64,13 +65,27 @@ const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps
 
   return (
     <>
+    <View
+    style={{
+      borderWidth: 1,
+      borderColor: '#000000'
+    }}>
+      <Pressable
+        style={{
+          width: 64, 
+          height: 64, 
+          flex: 1, 
+          backgroundColor: currentColor?.HEX,
+        }} 
+        onPress={() => setOpen(!open)}/>
+    </View>
       {
-            props.open &&
+            open &&
             <Modal
               onLayout={(e) => setModalLayout(e.nativeEvent.layout)}
-              visible={props.open}
+              visible={open}
               transparent
-              onRequestClose={props.close}
+              onRequestClose={() => setOpen(false)}
               style={{
               flex: 1,
               padding: 10,
@@ -83,7 +98,7 @@ const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps
                       backgroundColor: 'rgba(0,0,0,0.2)'
                     }}
                     onPressOut={() => {}}
-                    onPress={props.close}>
+                    onPress={() => setOpen(false)}>
                       <Pressable
                         style={{
                           position: 'absolute',
