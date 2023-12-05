@@ -17,11 +17,3 @@ module.exports = async function (env, argv) {
 
   return config;
 };
-
-// resolve: {
-//   alias: {
-//       'react-native': 'react-native-web',
-//       ...
-//       'react-native-webview': 'react-native-web-webview',
-//   }
-// }
