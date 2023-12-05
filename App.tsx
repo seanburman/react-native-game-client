@@ -6,6 +6,7 @@ import { useState } from 'react';
 import {isEqual} from 'lodash'
 import { Canvas } from './src/components/Canvas/Canvas';
 import { CanvasProvider } from './src/components/Canvas/context';
+import { NavigationContainer } from '@react-navigation/native';
 
 export default function App() {
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -27,40 +28,42 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <SafeAreaView style={styles.container} >
-        <CanvasProvider>
-        <View style={{flexDirection: 'column', flex: 1, paddingTop: 20}}>
-                <View style={{height: 400, width: 400, borderWidth: 1, borderColor: 'black'}}>
-                    <Canvas currentColor={color} width={16} height={16}/>
-                </View>
-            <View style={{flexDirection: 'column', marginTop: 10}}>
-                <Pressable
-                  style={{
-                    width: 50, 
-                    height: 50, 
-                    backgroundColor: color?.HEX, 
-                    borderColor: 'black', 
-                    borderWidth: 1
-                  }} 
-                  onPress={() => setPickerOpen(!pickerOpen)}/>
-              {/* <Pressable style={{width: 100, height: 20, alignItems: 'center', borderColor: 'black', borderWidth: 1}} onPress={handlePaletteAdd}>
-                <Text>+</Text>
-              </Pressable> */}
+      <NavigationContainer>
+        <SafeAreaView style={styles.container} >
+          <CanvasProvider>
+          <View style={{flexDirection: 'column', flex: 1, paddingTop: 20}}>
+                  <View style={{height: 400, width: 400, borderWidth: 1, borderColor: 'black'}}>
+                      <Canvas currentColor={color} width={16} height={16}/>
+                  </View>
+              <View style={{flexDirection: 'column', marginTop: 10}}>
+                  <Pressable
+                    style={{
+                      width: 50, 
+                      height: 50, 
+                      backgroundColor: color?.HEX, 
+                      borderColor: 'black', 
+                      borderWidth: 1
+                    }} 
+                    onPress={() => setPickerOpen(!pickerOpen)}/>
+                {/* <Pressable style={{width: 100, height: 20, alignItems: 'center', borderColor: 'black', borderWidth: 1}} onPress={handlePaletteAdd}>
+                  <Text>+</Text>
+                </Pressable> */}
 
-                <ColorSelector
-                  color={color?.HEX || "transparent"}
-                  open={pickerOpen}
-                  onChange={setColor}
-                  close={() => setPickerOpen(false)}
-                />
-              {/* <Palette
-                colors={palette}
-                onPress={handlePaletteRemove}
-              /> */}
-            </View>
-        </View>
-        </CanvasProvider>
-      </SafeAreaView>
+                  <ColorSelector
+                    color={color?.HEX || "transparent"}
+                    open={pickerOpen}
+                    onChange={setColor}
+                    close={() => setPickerOpen(false)}
+                  />
+                {/* <Palette
+                  colors={palette}
+                  onPress={handlePaletteRemove}
+                /> */}
+              </View>
+          </View>
+          </CanvasProvider>
+        </SafeAreaView>
+      </NavigationContainer>
     </Provider>
   );
 }
