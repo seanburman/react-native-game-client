@@ -4,8 +4,7 @@ import {store} from './src/redux/store'
 import { ColorChoice, ColorSelector, Palette } from './src/components/Canvas/ColorSelection';
 import { useState } from 'react';
 import {isEqual} from 'lodash'
-import {Canvas} from './src/components/Canvas/Canvas';
-import { PanGestureHandler, State } from 'react-native-gesture-handler'
+import { Canvas } from './src/components/Canvas/Canvas';
 import { CanvasProvider } from './src/components/Canvas/context';
 
 export default function App() {
@@ -32,7 +31,7 @@ export default function App() {
         <CanvasProvider>
         <View style={{flexDirection: 'column', flex: 1, paddingTop: 20}}>
                 <View style={{height: 400, width: 400, borderWidth: 1, borderColor: 'black'}}>
-                    <Canvas currentColor={color} width={32} height={32}/>
+                    <Canvas currentColor={color} width={16} height={16}/>
                 </View>
             <View style={{flexDirection: 'column', marginTop: 10}}>
                 <Pressable
@@ -43,16 +42,16 @@ export default function App() {
                     borderColor: 'black', 
                     borderWidth: 1
                   }} 
-                  onPress={() => setPickerOpen(!pickerOpen)}
-                />
+                  onPress={() => setPickerOpen(!pickerOpen)}/>
               {/* <Pressable style={{width: 100, height: 20, alignItems: 'center', borderColor: 'black', borderWidth: 1}} onPress={handlePaletteAdd}>
                 <Text>+</Text>
               </Pressable> */}
 
-                <ColorSelector 
+                <ColorSelector
                   color={color?.HEX || "transparent"}
                   open={pickerOpen}
                   onChange={setColor}
+                  close={() => setPickerOpen(false)}
                 />
               {/* <Palette
                 colors={palette}

@@ -1,9 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { ColorChoice, RGBA } from "./ColorSelection"
 import { LayoutRectangle } from "react-native"
+import { cloneDeep, every } from "lodash"
 
-export type SavedCanvas = {
-    data: Map<number, Omit<RGBA, "string">>
+export type PixelProps = {
+    color: ColorChoice | undefined,
 }
 
 export type CanvasResolution = {
@@ -27,16 +28,18 @@ export type PixelCoords = {
 }
 
 type CanvasContextData = {
-    // To be consumed by future implementations
-    touchCoords: TouchCoords | undefined
     // Consumed by useCanvasPixel hook
-    canvasResolution: CanvasResolution | undefined
+    canvasResolution: CanvasResolution | undefined,
     // Consumed by useCanvasPixel hook
     pixelDimensions: Dimensions | undefined,
+    // Consumed by view rendering pixels
+    pixels: PixelProps[] | undefined,
     // Consumed by useCanvasPixel hook
     isTouched: PixelCoords | undefined,
     // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined,
+    // To be consumed by future implementations
+    touchCoords: TouchCoords | undefined,
 }
 
 export type CanvasContextState = CanvasContextData & {
@@ -57,6 +60,7 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
     const [canvasLayout, _setCanvasLayout] = useState<LayoutRectangle>()
     const [pixelDimensions, setPixelDimensions] = useState<Dimensions>()
     const [touchCoords, _setTouchCoords] = useState<TouchCoords>()
+    const [pixels, setPixels] = useState<PixelProps[]>()
     const [isTouched, setIsTouched] = useState<PixelCoords>()
     const [currentColor, _setCurrentColor] = useState<ColorChoice>()
 
@@ -67,6 +71,7 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         _setCanvasResolution(resolution)
     },[])
 
+    // 
     const setCanvasLayout = useCallback((layout: LayoutRectangle) => {
         if(layout.height <= 0 || layout.width <= 0) {
             throw new Error(`canvas is hidden by parent with dimensions: ${layout}`)
@@ -74,6 +79,7 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         _setCanvasLayout(layout)
     },[])
 
+    // TouchCoords are set by TapGesture or PanGesture wrapping the containing view
     const setTouchCoords = useCallback((coords: TouchCoords | undefined) => {
         if(!canvasResolution) {
             throw new Error(`canvasResolution must be set`)
@@ -84,15 +90,39 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         if(!pixelDimensions) {
             throw new Error(`pixelDimensions not set by CanvasProvider`)
         }
-        _setTouchCoords(coords)
-        if(coords) {
-            setIsTouched({
-                column: Math.floor(coords.x/pixelDimensions.width), 
-                row: Math.floor(coords.y/pixelDimensions.height)
-            })
-        }
-    },[canvasResolution, canvasLayout, pixelDimensions])
+        // console.log(coords)
+        // _setTouchCoords(coords)
 
+        if(!coords) {
+            return
+        }
+        const touchColumn = Math.floor(coords.x/pixelDimensions.width)
+        const touchRow = Math.floor(coords.y/pixelDimensions.height)
+
+        // TODO: Use this for other feedback for user
+        // setIsTouched({
+        //     column: touchColumn, 
+        //     row: touchRow
+        // })
+        //
+        if(!pixels) {
+            return
+        }
+        // Update touched pixel
+        const pixelsCopy = cloneDeep(pixels)
+
+        // make sure pan is within bounds of canvas before attempting to update
+        if(
+            (touchColumn < canvasResolution.columns && touchRow < canvasResolution.rows) &&
+            (touchColumn >= 0 && touchRow >= 0)
+        ) {
+            pixelsCopy[touchRow * canvasResolution.columns + touchColumn].color = currentColor
+        }
+        setPixels(pixelsCopy)
+
+    },[canvasResolution, canvasLayout, pixelDimensions, pixels])
+
+    // Set current selected color by color picker or user input
     const setCurrentColor = useCallback((color: ColorChoice) => {
         const poundHEX = /^#[0-9A-F]{6}$/i
         const noPoundHEX = /^[0-9A-F]{6}$/i;
@@ -106,8 +136,10 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         _setCurrentColor(color)
     },[])
     
+    // Set pixel dimensions as calculated by Canvas containing View
+    // and the dimensions of the canvas in pixels
     useEffect(() => {
-        if(!canvasLayout || !canvasResolution) {
+        if(!(canvasLayout && canvasResolution)) {
             return
         }
         setPixelDimensions({
@@ -116,7 +148,23 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         })
     }, [canvasLayout, canvasResolution])
 
+    // Create new PixelProps for rendering in containing view
+    useEffect(() => {
+        // Don't create new pixels if they already exist
+        if(pixels || !(canvasResolution && pixelDimensions)) {
+            return
+        }
+        let newPixels: PixelProps[] = []
+        for(let i=0; i<canvasResolution.columns * canvasResolution.rows; i++) {
+            newPixels = [...newPixels, {
+                color: undefined,
+            }]
+        }
+        setPixels(newPixels)
+    },[canvasLayout, canvasResolution, pixelDimensions])
+
     const canvasContextValue: CanvasContextState = {
+        pixels,
         touchCoords,
         canvasResolution,
         pixelDimensions,
@@ -136,44 +184,4 @@ export const useCanvas = () => {
         throw new Error("useCanvas must be used within a CanvasContext provider")
     }
     return context
-}
-export const useCanvasPixel = (index: number) => {
-    const context = useContext(CanvasContext)
-    if(!context) {
-        throw new Error("useCanvasPixel must be used within a CanvasContext provider")
-    }
-
-    
-    const touchCallback = useCallback(() => {
-        return (context.canvasResolution && context.isTouched &&
-            context.isTouched.column === index%context.canvasResolution.columns &&
-            context.isTouched.row === Math.floor(index/context.canvasResolution.columns))
-        }, [context.isTouched])
-
-    if(touchCallback() === true) {
-        console.log(context.isTouched)
-    }
-    
-    const colorRef = useRef<ColorChoice | undefined>(undefined)
-    const pixelDimensionsRef = useRef(context.pixelDimensions)
-
-    useEffect(() => {
-        // console.log(index)
-        // console.log(context.currentColor)
-        colorRef.current = context.currentColor 
-        // console.log(colorTest)
-    }, [touchCallback()])
-    // if(context.isTouched && context.canvasResolution &&
-    //     context.isTouched.column === index%context.canvasResolution.columns &&
-    //     context.isTouched.row === Math.floor(index/context.canvasResolution.columns)
-    // ) {
-        
-    // }
-
-    return {
-        isTouched: touchCallback()?.valueOf(), 
-        currentColor: colorRef, 
-        pixelDimensions: pixelDimensionsRef
-    }
-
 }

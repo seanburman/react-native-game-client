@@ -1,18 +1,20 @@
-import { LayoutRectangle, Text, View } from "react-native";
-import { createContext, useEffect, useState } from "react";
+import { View } from "react-native";
+import { useEffect } from "react";
 import { PanGestureHandler, TapGestureHandler } from 'react-native-gesture-handler'
-import { ColorChoice, PaletteSquare } from "./ColorSelection";
-import { useCanvas, useCanvasPixel } from "./context";
+import { ColorChoice } from "./ColorSelection";
+import { useCanvas } from "./context";
 
-export interface CanvasProps {
+export interface OldCanvasProps {
     currentColor: ColorChoice,
     width: number,
     height: number,
 }
 
-export const Canvas: React.FC<CanvasProps>= (props: CanvasProps) => {
-    const [pixelMap, setPixelMap] = useState<number[]>()
+export const Canvas: React.FC<OldCanvasProps>= (props: OldCanvasProps) => {
+
     const {
+        pixels,
+        pixelDimensions,
         setCanvasResolution, 
         setCanvasLayout,
         setTouchCoords,
@@ -30,14 +32,6 @@ export const Canvas: React.FC<CanvasProps>= (props: CanvasProps) => {
         setCanvasResolution({columns: props.width, rows: props.height})
     },[props.width, props.height])
 
-    useEffect(() => {
-        let range: number[] = []
-        for(let i=0; i<props.width*props.height; i++) {
-            range.push(i)
-        }
-        setPixelMap(range)
-    },[props.width, props.height])
-
     return (
         <TapGestureHandler
             maxDelayMs={1}
@@ -49,6 +43,7 @@ export const Canvas: React.FC<CanvasProps>= (props: CanvasProps) => {
             onFailed={handleTouchStop}>
             <PanGestureHandler
                 activeOffsetX={1}
+                activeOffsetY={1}
                 onGestureEvent={(e) => handleGestureEvent({x: e.nativeEvent.x, y: e.nativeEvent.y})}
                 // onBegan={handlePanStart}
                 // onActivated={handlePanStart}
@@ -58,58 +53,23 @@ export const Canvas: React.FC<CanvasProps>= (props: CanvasProps) => {
                 <View
                     onLayout={(e) => setCanvasLayout(e.nativeEvent.layout)}
                     style={{
-                    width: '100%',
-                    height: '100%',
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    // backgroundColor: 'red'
+                        flex: 1,
+                        flexDirection: 'row',
+                        flexWrap: 'wrap'
                     }}>
                     {
-                        pixelMap &&
-                        pixelMap.map((p) => (
-                            <Pixel index={p} key={p}/>
+                        pixels?.map((p, i) => (
+                            <View
+                                style={{
+                                    width: pixelDimensions?.width,
+                                    height: pixelDimensions?.height,
+                                    backgroundColor: p.color?.HEX
+                                }}
+                                key={i}/>
                         ))
                     }
                 </View>
             </PanGestureHandler>
         </TapGestureHandler>
-    )
-}
-
-const Pixel: React.FC<{index: number}> = ({index}) => {
-    // const {pixelDimensions, touched, currentColor} = useCanvasPixel(index)
-    // const {isTouched, currentColor, canvasResolution ,pixelDimensions} = useCanvas()
-    const canvasPixel = useCanvasPixel(index)
-    const [color, setColor] = useState("transparent")
-
-    const {
-        isTouched,
-        currentColor,
-        pixelDimensions
-    } = canvasPixel
-
-    useEffect(() => {
-    }, [canvasPixel])
-
-    useEffect(() => {
-        console.log("isTouched changed")
-        if(currentColor.current) {
-            console.log("new color")
-            setColor(currentColor.current.HEX)
-        }
-    },[isTouched])
-    
-    console.log("rendered")
-    if(color !== "transparent")
-    console.log(color)
-    return (
-        <View
-            style={{
-                // borderWidth: 1,
-                borderColor: 'black',
-                width: pixelDimensions.current?.width || 0,
-                height: pixelDimensions.current?.height || 0,
-                backgroundColor: color,
-            }}></View>
     )
 }
