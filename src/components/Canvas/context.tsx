@@ -63,7 +63,7 @@ const CanvasContext = createContext<CanvasContextState | undefined>(undefined)
 
 export function CanvasProvider({children}: React.PropsWithChildren) {
     const [canvasResolution, _setCanvasResolution] = useState<CanvasResolution>()
-    const [canvasLayout, _setCanvasLayout] = useState<LayoutRectangle>()
+    const [canvasLayout, setCanvasLayout] = useState<LayoutRectangle>()
     const [pixelDimensions, setPixelDimensions] = useState<Dimensions>()
     const [touchCoords, _setTouchCoords] = useState<TouchCoords>()
     const [pixels, setPixels] = useState<PixelProps[]>()
@@ -76,14 +76,6 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
             throw new Error("CanvasResolution must be at least 4 width and 4 height")
         }
         _setCanvasResolution(resolution)
-    },[])
-
-    // 
-    const setCanvasLayout = useCallback((layout: LayoutRectangle) => {
-        if(layout.height <= 0 || layout.width <= 0) {
-            throw new Error(`canvas is hidden by parent with dimensions: ${layout}`)
-        }
-        _setCanvasLayout(layout)
     },[])
 
     // TouchCoords are set by TapGesture or PanGesture wrapping the containing view

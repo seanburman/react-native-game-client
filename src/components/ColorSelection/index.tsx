@@ -2,7 +2,8 @@ import { LayoutRectangle, Pressable, View } from 'react-native'
 import ColorPicker from 'react-native-wheel-color-picker'
 import { useCanvas } from '../Canvas/context'
 import { Modal } from 'react-native'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { ModalEmpty } from '../Modal'
 
 export type RGBA = {
     r: number,
@@ -48,14 +49,13 @@ body[0].style.overflow = "hidden"
 
 interface ColorSelectionProps {
   color: string,
-  onPress?: () => void,
+  open: boolean
+  close: () => void
   onChange?: (color: ColorChoice) => void,
 }
 
 const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps) => {
-  const [modalLayout, setModalLayout] = useState<LayoutRectangle>()
   const {currentColor, setCurrentColor} = useCanvas()
-  const [open, setOpen] = useState(false)
 
   function handleChange(hex: string) {
     setCurrentColor(parseColorChoice(hex))
@@ -63,79 +63,40 @@ const ColorSelector: React.FC<ColorSelectionProps> = (props: ColorSelectionProps
     props.onChange(parseColorChoice(hex))
   }
 
-  function handlePress() {
-    if (props.onPress) {
-      props.onPress()
-    }
-  }
-
   return (
     <>
-    <Pressable
-      style={{
-        width: '100%',
-        height: '100%'
-      }}
-      onPress={handlePress}>
-      <Pressable
+      <View
         style={{
-          flex: 1,
+          width: '100%',
+          height: '100%',
           borderRadius: 12,
           backgroundColor: currentColor?.HEX,
-        }} 
-        onPress={() => setOpen(!open)}/>
-    </Pressable>
-      {
-            open &&
-            <Modal
-              onLayout={(e) => setModalLayout(e.nativeEvent.layout)}
-              visible={open}
-              transparent
-              onRequestClose={() => setOpen(false)}
-              style={{
-              flex: 1,
-              padding: 10,
-              borderRadius: 10,
-              marginTop: 0}}>
-                { modalLayout &&
-                  <Pressable
-                    style={{
-                      flex: 1,
-                      backgroundColor: 'rgba(0,0,0,0.2)'
-                    }}
-                    onPressOut={() => {}}
-                    onPress={() => setOpen(false)}>
-                      <Pressable
-                        style={{
-                          position: 'absolute',
-                          top: modalLayout.height/2-150,
-                          left: modalLayout.width/2-125,
-                        }}>
-                        <View
-                        style={{
-                          width: 250,
-                          height: 300,
-                          padding: 20,
-                          //TODO: extract shadow into a theme
-                          borderColor:'rgba(0,0,0,0.15)',
-                          borderWidth:1,
-                          shadowColor: 'rgba(0,0,0,0.3)',
-                          shadowRadius: 10,
-                          shadowOpacity: 1,
-                          borderRadius: 16,
-                          backgroundColor: 'white',
-                          marginTop: 0}}>
-                        <ColorPicker
-                            onColorChange={handleChange}
-                            onColorChangeComplete={handleChange}
-                            color={currentColor?.HEX}
-                            palette={["#FFFFFF"]}
-                            swatches/>
-                        </View>
-                      </Pressable>
-                  </Pressable>}
-            </Modal>
-      }
+        }}/>
+      <ModalEmpty
+        open={props.open}
+        close={props.close}>
+        <View
+          style={{
+            width: 250,
+            height: 300,
+            padding: 20,
+            //TODO: extract shadow into a theme
+            borderColor:'rgba(0,0,0,0.15)',
+            borderWidth:1,
+            shadowColor: 'rgba(0,0,0,0.3)',
+            shadowRadius: 10,
+            shadowOpacity: 1,
+            borderRadius: 16,
+            backgroundColor: 'white',
+            marginTop: 0}}>
+          <ColorPicker
+              onColorChange={handleChange}
+              onColorChangeComplete={handleChange}
+              color={currentColor?.HEX}
+              palette={["#FFFFFF"]}
+              swatches/>
+        </View>
+      </ModalEmpty>
     </>
   )
 }

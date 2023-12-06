@@ -15,7 +15,7 @@ export default function CanvasPreview({width, height}: Props) {
             width: width + 2,
             height: height + 2,
             borderWidth: 1,
-            borderColor: '#000000',
+            borderColor: 'rgba(0,0,0,0.4)',
         }}>
             <View
             style={{
