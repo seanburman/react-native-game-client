@@ -1,10 +1,10 @@
+import React, { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
 import {
     useAuthenticateGameMutation,
     useCreateGameSessionMutation,
 } from "../../redux/authSlice";
-import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { store } from "../../redux/store";
 

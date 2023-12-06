@@ -1,3 +1,4 @@
+import React from 'react';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import SpriteMaker from "../../views/SpriteMaker";
 import Game from "../../views/Game";

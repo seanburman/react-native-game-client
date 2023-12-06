@@ -1,7 +1,7 @@
+import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { ShadowButtonSmall } from "../Buttons";
 import { ColorChoice, ColorSelector } from "../ColorSelection";
-import { useState } from "react";
 import { useCanvas } from "./context";
 import { ModalEmpty } from "../Modal";
 import { ConfirmPrompt } from "../Modal/prompt";

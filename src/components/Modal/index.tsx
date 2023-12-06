@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { LayoutRectangle, Modal, Pressable } from "react-native";
+import React from "react";
+import { Modal, Pressable } from "react-native";
 
 interface Props {
     open: boolean;
