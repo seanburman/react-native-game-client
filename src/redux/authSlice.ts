@@ -1,33 +1,31 @@
 import { apiSlice } from ".";
 export const authSlice = apiSlice.injectEndpoints({
-    endpoints: builder => ({
+    endpoints: (builder) => ({
         authenticateGame: builder.mutation({
-            query: (arg: {username: string, password: string}) => ({
+            query: (arg: { username: string; password: string }) => ({
                 url: `auth/user`,
-                method: 'POST',
+                method: "POST",
                 body: JSON.stringify(arg),
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
             // invalidatesTags: ['Game'],
-            transformResponse: (response: {token: string})  => response
+            transformResponse: (response: { token: string }) => response,
         }),
         createGameSession: builder.mutation({
-            query: (arg: {token: string}) => ({
+            query: (arg: { token: string }) => ({
                 url: `game/session/create`,
-                method: 'POST',
+                method: "POST",
                 body: JSON.stringify(arg),
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    "Content-Type": "application/json",
+                },
             }),
-            transformResponse: (response: {session_id: string})  => response
+            transformResponse: (response: { session_id: string }) => response,
         }),
-    })
-})
+    }),
+});
 
-export const {
-    useAuthenticateGameMutation,
-    useCreateGameSessionMutation
-} = authSlice
+export const { useAuthenticateGameMutation, useCreateGameSessionMutation } =
+    authSlice;
