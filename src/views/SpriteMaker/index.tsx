@@ -49,7 +49,6 @@ export default function SpriteMaker() {
                         height: 400,
                         width: 400,
                         borderWidth: 1,
-                        // borderColor: 'black',
                         borderColor: "rgba(0,0,0,0.4)",
                         shadowColor: "rgba(0,0,0,0.4)",
                         shadowRadius: 4,

@@ -1,14 +1,22 @@
-import React from 'react';
-import { Pressable, StyleSheet, View } from "react-native";
+import React from "react";
+import {
+    Pressable,
+    StyleProp,
+    StyleSheet,
+    View,
+    ViewStyle,
+} from "react-native";
 
 interface Props {
     onPress?: () => void;
     disabled?: boolean;
+    style?: StyleProp<ViewStyle>;
 }
 export const ShadowButtonSmall: React.FC<React.PropsWithChildren<Props>> = ({
     children,
     onPress,
     disabled,
+    style,
 }) => {
     function handlePress() {
         if (onPress) {
@@ -22,7 +30,7 @@ export const ShadowButtonSmall: React.FC<React.PropsWithChildren<Props>> = ({
             style={[styles.wrapper, { opacity: disabled ? 0.5 : 1 }]}
             disabled={disabled}
         >
-            <View style={styles.content}>{children}</View>
+            <View style={[styles.content, style]}>{children}</View>
         </Pressable>
     );
 };
