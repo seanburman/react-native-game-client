@@ -41,7 +41,7 @@ export const BottomMenu: React.FC = () => {
                 </>
             </ShadowButtonSmall>
 
-            <ShadowButtonSmall onPress={() => setGrid(!grid)}>
+            <ShadowButtonSmall onPress={() => setGrid(!grid)} depress>
                 <Text>Grid</Text>
             </ShadowButtonSmall>
 

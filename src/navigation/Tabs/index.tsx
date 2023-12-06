@@ -1,13 +1,14 @@
-import React from 'react';
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import SpriteMaker from "../../views/SpriteMaker";
 import Game from "../../views/Game";
+import { StyleSheet } from "react-native";
+import SpriteMaker from "../../views/SpriteMaker";
 
+const Tab = createBottomTabNavigator();
 export default function Tabs() {
-    const Tab = createBottomTabNavigator();
     return (
         <Tab.Navigator
-            screenOptions={{ headerShown: false }}
+            screenOptions={{ headerShown: false, tabBarStyle: styles.tabBar }}
             initialRouteName="SpriteMaker"
         >
             <Tab.Screen name="SpriteMaker" component={SpriteMaker} />
@@ -15,3 +16,11 @@ export default function Tabs() {
         </Tab.Navigator>
     );
 }
+
+const styles = StyleSheet.create({
+    tabBar: {
+        height: 80,
+        paddingBottom: 20,
+        paddingTop: 20,
+    },
+});
