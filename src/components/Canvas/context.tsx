@@ -110,16 +110,21 @@ export function CanvasProvider({children}: React.PropsWithChildren) {
         // Update touched pixel
         const pixelsCopy = cloneDeep(pixels)
 
-        // make sure pan is within bounds of canvas before attempting to update
-        if(
-            (touchColumn < canvasResolution.columns && touchRow < canvasResolution.rows) &&
-            (touchColumn >= 0 && touchRow >= 0)
-        ) {
-            pixelsCopy[touchRow * canvasResolution.columns + touchColumn].color = currentColor
-        }
-        setPixels(pixelsCopy)
-
-    },[canvasResolution, canvasLayout, pixelDimensions, pixels])
+            // make sure pan is within bounds of canvas before attempting to update
+            if (
+                touchColumn < canvasResolution.columns &&
+                touchRow < canvasResolution.rows &&
+                touchColumn >= 0 &&
+                touchRow >= 0
+            ) {
+                pixelsCopy[
+                    touchRow * canvasResolution.columns + touchColumn
+                ].color = currentColor;
+            }
+            setPixels(pixelsCopy);
+        },
+        [canvasResolution, canvasLayout, pixelDimensions, pixels, currentColor]
+    );
 
     // Set current selected color by color picker or user input
     const setCurrentColor = useCallback((color: ColorChoice) => {
