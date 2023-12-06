@@ -2,41 +2,43 @@ import { View } from "react-native";
 import { useCanvas } from "./context";
 
 interface Props {
-    width: number,
-    height: number
+    width: number;
+    height: number;
 }
 
-export default function CanvasPreview({width, height}: Props) {
-    const {pixels, canvasResolution} = useCanvas()
+export default function CanvasPreview({ width, height }: Props) {
+    const { pixels, canvasResolution } = useCanvas();
 
     return (
         <View
-        style={{
-            width: width + 2,
-            height: height + 2,
-            borderWidth: 1,
-            borderColor: 'rgba(0,0,0,0.4)',
-        }}>
-            <View
             style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                width: width,
-                height: height,
-            }}>
-                {
-                    canvasResolution && pixels &&
+                width: width + 2,
+                height: height + 2,
+                borderWidth: 1,
+                borderColor: "rgba(0,0,0,0.4)",
+            }}
+        >
+            <View
+                style={{
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    width: width,
+                    height: height,
+                }}
+            >
+                {canvasResolution &&
+                    pixels &&
                     pixels.map((p, i) => (
                         <View
                             style={{
-                                width: width/canvasResolution?.columns,
-                                height: height/canvasResolution?.rows,
-                                backgroundColor: p.color?.HEX
+                                width: width / canvasResolution?.columns,
+                                height: height / canvasResolution?.rows,
+                                backgroundColor: p.color?.HEX,
                             }}
-                            key={i}/>
-                    ))
-                }
+                            key={i}
+                        />
+                    ))}
             </View>
         </View>
-    )
+    );
 }

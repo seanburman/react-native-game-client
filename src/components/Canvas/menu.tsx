@@ -1,33 +1,35 @@
-import { Text, View } from "react-native"
-import { ShadowButtonSmall } from "../Buttons"
-import { ColorChoice, ColorSelector } from "../ColorSelection"
-import { useEffect, useState } from "react"
-import { useCanvas } from "./context"
-import { ModalEmpty } from "../Modal"
-import { ConfirmPrompt } from "../Modal/prompt"
+import { Text, View } from "react-native";
+import { ShadowButtonSmall } from "../Buttons";
+import { ColorChoice, ColorSelector } from "../ColorSelection";
+import { useState } from "react";
+import { useCanvas } from "./context";
+import { ModalEmpty } from "../Modal";
+import { ConfirmPrompt } from "../Modal/prompt";
 
 export const BottomMenu: React.FC = () => {
-    const {pixels,grid, setGrid, clearCanvas} = useCanvas()
-    const [colorSelectorOpen, setColorSelectorOpen] = useState(false)
-    const [clearModalOpen, setclearModalOpen] = useState(false)
+    const { pixels, grid, setGrid, clearCanvas } = useCanvas();
+    const [colorSelectorOpen, setColorSelectorOpen] = useState(false);
+    const [clearModalOpen, setclearModalOpen] = useState(false);
     const [color, setColor] = useState<ColorChoice>({
-      HEX: 'FFFFFF', RGBA: {r: 0, g: 0, b:0 ,a: 0, string: ""}
-    })
+        HEX: "FFFFFF",
+        RGBA: { r: 0, g: 0, b: 0, a: 0, string: "" },
+    });
 
     function handleClear() {
-        setclearModalOpen(true)
+        setclearModalOpen(true);
     }
     function handleConfirm(confirmed: boolean) {
-        setclearModalOpen(false)
-        if(confirmed) {
-            clearCanvas()
+        setclearModalOpen(false);
+        if (confirmed) {
+            clearCanvas();
         }
     }
 
     return (
-        <View style={{flexDirection: 'row'}}>        
+        <View style={{ flexDirection: "row" }}>
             <ShadowButtonSmall
-                onPress={() => setColorSelectorOpen(!colorSelectorOpen)}>
+                onPress={() => setColorSelectorOpen(!colorSelectorOpen)}
+            >
                 <>
                     <ColorSelector
                         open={colorSelectorOpen}
@@ -35,34 +37,35 @@ export const BottomMenu: React.FC = () => {
                         color={color?.HEX || "transparent"}
                         onChange={setColor}
                     />
-                    <Text style={{position: 'absolute'}}>Color</Text>
+                    <Text style={{ position: "absolute" }}>Color</Text>
                 </>
             </ShadowButtonSmall>
 
-            <ShadowButtonSmall
-                onPress={() => setGrid(!grid)}>
+            <ShadowButtonSmall onPress={() => setGrid(!grid)}>
                 <Text>Grid</Text>
             </ShadowButtonSmall>
 
             <ModalEmpty
                 open={clearModalOpen}
-                close={() => setclearModalOpen(false)}>
-                    <ConfirmPrompt
-                        message={"Are you sure you want to clear the canvas?"}
-                        onChange={handleConfirm}
-                    />
+                close={() => setclearModalOpen(false)}
+            >
+                <ConfirmPrompt
+                    message={"Are you sure you want to clear the canvas?"}
+                    onChange={handleConfirm}
+                />
             </ModalEmpty>
-            <ShadowButtonSmall 
+            <ShadowButtonSmall
                 onPress={handleClear}
                 // If no pixels have color, then canvas is already clear
-                disabled={!pixels?.find(p => p.color)}>
+                disabled={!pixels?.find((p) => p.color)}
+            >
                 <Text>Clear</Text>
             </ShadowButtonSmall>
-            
-        {/* <Palette
+
+            {/* <Palette
             colors={palette}
             onPress={handlePaletteRemove}
         /> */}
         </View>
-    )
-}
+    );
+};
