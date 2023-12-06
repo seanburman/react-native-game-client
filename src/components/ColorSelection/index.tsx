@@ -1,8 +1,6 @@
-import { LayoutRectangle, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 import ColorPicker from "react-native-wheel-color-picker";
 import { useCanvas } from "../Canvas/context";
-import { Modal } from "react-native";
-import { useEffect, useState } from "react";
 import { ModalEmpty } from "../Modal";
 
 export type RGBA = {

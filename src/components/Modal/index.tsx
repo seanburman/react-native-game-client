@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LayoutRectangle, Modal, Pressable } from "react-native";
 
 interface Props {
@@ -11,7 +11,6 @@ export const ModalEmpty: React.FC<React.PropsWithChildren<Props>> = ({
     open,
     close,
 }) => {
-    const [modalLayout, setModalLayout] = useState<LayoutRectangle>();
 
     return (
         <>

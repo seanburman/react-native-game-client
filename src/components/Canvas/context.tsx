@@ -41,8 +41,6 @@ type CanvasContextData = {
     // Consumed by view rendering pixels
     pixels: PixelProps[] | undefined;
     // Consumed by useCanvasPixel hook
-    isTouched: PixelCoords | undefined;
-    // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined;
     // Consumed by canvas to toggle grid view
     grid: boolean;
@@ -74,7 +72,6 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
     const [pixelDimensions, setPixelDimensions] = useState<Dimensions>();
     const [touchCoords, _setTouchCoords] = useState<TouchCoords>();
     const [pixels, setPixels] = useState<PixelProps[]>();
-    const [isTouched, setIsTouched] = useState<PixelCoords>();
     const [currentColor, _setCurrentColor] = useState<ColorChoice>();
     const [grid, setGrid] = useState(true);
 
@@ -199,7 +196,6 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         touchCoords,
         canvasResolution,
         pixelDimensions,
-        isTouched,
         currentColor,
         grid,
         setCanvasResolution,
