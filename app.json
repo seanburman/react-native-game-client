@@ -1,5 +1,6 @@
 {
   "expo": {
+    "bundler": "metro",
     "name": "website",
     "slug": "website",
     "version": "1.0.0",

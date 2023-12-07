@@ -1,5 +1,4 @@
 import "react-native-gesture-handler";
-// import "react-native-reanimated";
 import { SafeAreaView, StyleSheet } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./src/redux/store";

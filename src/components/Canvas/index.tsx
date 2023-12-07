@@ -35,6 +35,7 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
 
     return (
         <TapGestureHandler
+            // enabled={false}
             maxDelayMs={1}
             onGestureEvent={(e) =>
                 handleGestureEvent({ x: e.nativeEvent.x, y: e.nativeEvent.y })
@@ -56,6 +57,7 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
             onFailed={handleTouchStop}
         >
             <PanGestureHandler
+            // enabled={false}
                 activeOffsetX={1}
                 activeOffsetY={1}
                 onGestureEvent={(e) =>

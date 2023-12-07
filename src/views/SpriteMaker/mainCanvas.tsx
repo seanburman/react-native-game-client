@@ -1,11 +1,14 @@
-import React from 'react';
-import { View } from "react-native";
+import React, { useRef } from "react";
+import { DrawerScreenProps } from "@react-navigation/drawer/lib/typescript/src/types";
+import { Button, ScrollView, View } from "react-native";
 import { CanvasProvider } from "../../components/Canvas/context";
 import { Canvas } from "../../components/Canvas";
 import CanvasPreview from "../../components/Canvas/preview";
-import { BottomMenu } from "../../components/Canvas/tools";
+import { BottomMenu } from "../../components/Canvas/menu/bottom";
+import RightMenu from "../../components/Canvas/menu/right";
 
-export default function MainCanvas() {
+export default function MainCanvas(props: DrawerScreenProps<any, any>) {
+    props.navigation.openDrawer;
     // const [palette, setPalette] = useState<ColorChoice[]>([])
 
     // function handlePaletteAdd() {
@@ -17,7 +20,8 @@ export default function MainCanvas() {
     // function handlePaletteRemove(color: ColorChoice) {
     //   const newPalette = palette.filter(c => !isEqual(c, color))
     //   setPalette(newPalette)
-    // }
+    const scrollViewRef = useRef<ScrollView>(null)
+
     return (
         <CanvasProvider>
             <View
@@ -55,9 +59,25 @@ export default function MainCanvas() {
                         shadowOpacity: 1,
                     }}
                 >
-                    <Canvas columns={16} rows={16} />
+                    <ScrollView
+                        ref={scrollViewRef}
+                        style={{ flex: 1 }}
+                        onScroll={(e) => console.log(e)}
+                        contentContainerStyle={{flexGrow: 1}}
+                    >
+                        <View
+                            style={{
+                                height: 600,
+                                width: 600,
+                            }}
+                        >
+                            <Canvas columns={32} rows={32} />
+                        </View>
+                    </ScrollView>
                 </View>
+                <Button title="Scroll" onPress={() => scrollViewRef.current && scrollViewRef.current.scrollTo({y: 900})}/>
                 <BottomMenu />
+                {/* <RightMenu {...props} /> */}
             </View>
         </CanvasProvider>
     );
