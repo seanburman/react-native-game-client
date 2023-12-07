@@ -76,6 +76,7 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
                         flex: 1,
                         flexDirection: "row",
                         flexWrap: "wrap",
+                        // backgroundColor: "rgba(0,0,0,0.05)"
                     }}
                 >
                     {pixels?.map((p, i) => (
@@ -83,7 +84,9 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
                             style={{
                                 width: pixelDimensions?.width,
                                 height: pixelDimensions?.height,
-                                backgroundColor: p.color?.HEX,
+                                backgroundColor: p.color
+                                    ? p.color.HEX
+                                    : "transparent",
                                 borderBottomWidth: grid ? 1 : 0,
                                 borderRightWidth: grid ? 1 : 0,
                                 borderColor: "rgba(0,0,0,.25)",

@@ -5,6 +5,7 @@ module.exports = async function (env, argv) {
   // Customize the config before returning it.
   config.resolve.alias['react-native'] = 'react-native-web'
   config.resolve.alias['react-native-webview'] = 'react-native-web-webview'
+  // config.resolve.alias['react-native-reanimated'] = 'react-native-reanimated'
   config.module.rules.push({
     test: /postMock.html$/,
     use: {
