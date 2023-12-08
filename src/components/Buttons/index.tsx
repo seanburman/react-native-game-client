@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Pressable,
     StyleProp,
@@ -10,15 +10,22 @@ import {
 interface Props {
     onPress?: () => void;
     disabled?: boolean;
+    depress?: boolean;
     style?: StyleProp<ViewStyle>;
 }
 export const ShadowButtonSmall: React.FC<React.PropsWithChildren<Props>> = ({
     children,
     onPress,
     disabled,
+    depress,
     style,
 }) => {
+    const [depressed, setDepressed] = useState(false)
+
     function handlePress() {
+        if(depress) {
+            setDepressed(!depressed)
+        }
         if (onPress) {
             onPress();
         }
@@ -52,7 +59,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "rgba(0,0,0,0.3)",
         shadowColor: "rgba(0,0,0,0.4)",
-        shadowRadius: 4,
+        shadowRadius: 2,
         shadowOpacity: 1,
         borderRadius: 16,
     },

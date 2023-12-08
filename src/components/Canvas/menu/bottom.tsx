@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { ShadowButtonSmall } from "../Buttons";
-import { ColorChoice, ColorSelector } from "../ColorSelection";
-import { useCanvas } from "./context";
-import { ModalEmpty } from "../Modal";
-import { ConfirmPrompt } from "../Modal/prompt";
+import { ShadowButtonSmall } from "../../Buttons";
+import { ColorChoice, ColorSelector } from "../../ColorSelection";
+import { useCanvas } from "../context";
+import { ModalEmpty } from "../../Modal";
+import { ConfirmPrompt } from "../../Modal/prompt";
 
 export const BottomMenu: React.FC = () => {
     const { pixels, grid, setGrid, clearCanvas } = useCanvas();
@@ -41,7 +41,7 @@ export const BottomMenu: React.FC = () => {
                 </>
             </ShadowButtonSmall>
 
-            <ShadowButtonSmall onPress={() => setGrid(!grid)}>
+            <ShadowButtonSmall onPress={() => setGrid(!grid)} depress>
                 <Text>Grid</Text>
             </ShadowButtonSmall>
 
