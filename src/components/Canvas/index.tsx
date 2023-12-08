@@ -4,7 +4,12 @@ import {
     PanGestureHandler,
     TapGestureHandler,
 } from "react-native-gesture-handler";
+<<<<<<< Updated upstream
 import { useCanvas } from "./context";
+=======
+import { TouchCoords, useCanvas } from "./context";
+import Pixel from "./pixel";
+>>>>>>> Stashed changes
 
 export interface CanvasProps {
     columns: number;
@@ -25,7 +30,7 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
         setTouchCoords(undefined);
     }
 
-    function handleGestureEvent(e: { x: number; y: number }) {
+    function handleGestureEvent(e: TouchCoords) {
         setTouchCoords(e);
     }
 
@@ -41,15 +46,15 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
             }
             onBegan={(e) =>
                 handleGestureEvent({
-                    x: e.nativeEvent.x as number,
-                    y: e.nativeEvent.y as number,
-                })
+                    x: e.nativeEvent.x,
+                    y: e.nativeEvent.y,
+                } as TouchCoords)
             }
             onActivated={(e) =>
                 handleGestureEvent({
-                    x: e.nativeEvent.x as number,
-                    y: e.nativeEvent.y as number,
-                })
+                    x: e.nativeEvent.x,
+                    y: e.nativeEvent.y,
+                } as TouchCoords)
             }
             onEnded={handleTouchStop}
             onCancelled={handleTouchStop}
