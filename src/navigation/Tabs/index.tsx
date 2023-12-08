@@ -1,8 +1,8 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Game from "../../views/Game";
+import Game from "../../screens/Game";
 import { StyleSheet } from "react-native";
-import SpriteMaker from "../../views/SpriteMaker";
+import SpriteMaker from "../../screens/SpriteMaker";
 
 const Tab = createBottomTabNavigator();
 export default function Tabs() {
