@@ -8,18 +8,6 @@ import { BottomMenu } from "../../components/Canvas/menu/bottom";
 import RightMenu from "../../components/Canvas/menu/right";
 
 export default function MainCanvas(props: DrawerScreenProps<any, any>) {
-    props.navigation.openDrawer;
-    // const [palette, setPalette] = useState<ColorChoice[]>([])
-
-    // function handlePaletteAdd() {
-    //   if(!color) return
-    //   if(palette.find(c => isEqual(c, color))) return
-    //   setPalette([...palette, color])
-    // }
-
-    // function handlePaletteRemove(color: ColorChoice) {
-    //   const newPalette = palette.filter(c => !isEqual(c, color))
-    //   setPalette(newPalette)
     const scrollViewRef = useRef<ScrollView>(null)
 
     return (
@@ -77,7 +65,7 @@ export default function MainCanvas(props: DrawerScreenProps<any, any>) {
                 </View>
                 <Button title="Scroll" onPress={() => scrollViewRef.current && scrollViewRef.current.scrollTo({y: 900})}/>
                 <BottomMenu />
-                {/* <RightMenu {...props} /> */}
+                <RightMenu {...props} />
             </View>
         </CanvasProvider>
     );

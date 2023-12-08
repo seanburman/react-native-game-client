@@ -1,8 +1,10 @@
 import React, {
+    RefObject,
     createContext,
     useCallback,
     useContext,
     useEffect,
+    useRef,
     useState,
 } from "react";
 import { ColorChoice } from "../ColorSelection";
@@ -40,6 +42,8 @@ type CanvasContextData = {
     pixelDimensions: Dimensions | undefined;
     // Consumed by view rendering pixels
     pixels: PixelProps[] | undefined;
+    // Insantiated by pixel containing view for reference by context
+    // pixelRefs: Map<number, React.RefObject<View>> | undefined
     // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined;
     // Consumed by canvas to toggle grid view
@@ -124,29 +128,38 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
                 touchColumn >= 0 &&
                 touchRow >= 0
             ) {
+                const index = touchRow * canvasResolution.columns + touchColumn
                 pixelsCopy[
-                    touchRow * canvasResolution.columns + touchColumn
+                    index
                 ].color = currentColor;
             }
             setPixels(pixelsCopy);
+
         },
         [canvasResolution, canvasLayout, pixelDimensions, pixels, currentColor]
     );
 
     // Set current selected color by color picker or user input
-    const setCurrentColor = useCallback((color: ColorChoice) => {
-        const poundHEX = /^#[0-9A-F]{6}$/i;
-        const noPoundHEX = /^[0-9A-F]{6}$/i;
-        const RGBA =
-            /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/;
-        if (!poundHEX.test(color.HEX) && !noPoundHEX.test(color.HEX)) {
-            throw new Error("invalid HEX string in call to setCurrentColor");
-        }
-        if (!RGBA.test(color.RGBA.string)) {
-            throw new Error("invalid RGBA string in call to setCurrentColor");
-        }
-        _setCurrentColor(color);
-    }, [currentColor]);
+    const setCurrentColor = useCallback(
+        (color: ColorChoice) => {
+            const poundHEX = /^#[0-9A-F]{6}$/i;
+            const noPoundHEX = /^[0-9A-F]{6}$/i;
+            const RGBA =
+                /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/;
+            if (!poundHEX.test(color.HEX) && !noPoundHEX.test(color.HEX)) {
+                throw new Error(
+                    "invalid HEX string in call to setCurrentColor"
+                );
+            }
+            if (!RGBA.test(color.RGBA.string)) {
+                throw new Error(
+                    "invalid RGBA string in call to setCurrentColor"
+                );
+            }
+            _setCurrentColor(color);
+        },
+        [currentColor]
+    );
 
     const clearCanvas = useCallback(() => setPixels(newPixels()), []);
 
