@@ -1,23 +1,15 @@
-import React from 'react';
-import { View } from "react-native";
+import React from "react";
+import { DrawerScreenProps } from "@react-navigation/drawer/lib/typescript/src/types";
+import { View, useWindowDimensions } from "react-native";
 import { CanvasProvider } from "../../components/Canvas/context";
 import { Canvas } from "../../components/Canvas";
 import CanvasPreview from "../../components/Canvas/preview";
-import { BottomMenu } from "../../components/Canvas/tools";
+import { BottomMenu } from "../../components/Canvas/menu/bottom";
+import RightMenu from "../../components/Canvas/menu/right";
 
-export default function MainCanvas() {
-    // const [palette, setPalette] = useState<ColorChoice[]>([])
+export default function MainCanvas(props: DrawerScreenProps<any, any>) {
+    const { width } = useWindowDimensions();
 
-    // function handlePaletteAdd() {
-    //   if(!color) return
-    //   if(palette.find(c => isEqual(c, color))) return
-    //   setPalette([...palette, color])
-    // }
-
-    // function handlePaletteRemove(color: ColorChoice) {
-    //   const newPalette = palette.filter(c => !isEqual(c, color))
-    //   setPalette(newPalette)
-    // }
     return (
         <CanvasProvider>
             <View
@@ -46,8 +38,8 @@ export default function MainCanvas() {
             >
                 <View
                     style={{
-                        height: 400,
-                        width: 400,
+                        height: width < 750 ? 400 : 600,
+                        width: width < 750 ? 400 : 600,
                         borderWidth: 1,
                         borderColor: "rgba(0,0,0,0.4)",
                         shadowColor: "rgba(0,0,0,0.4)",
@@ -55,9 +47,17 @@ export default function MainCanvas() {
                         shadowOpacity: 1,
                     }}
                 >
-                    <Canvas columns={16} rows={16} />
+                    <View
+                        style={{
+                            height: width < 750 ? 400 : 600,
+                            width: width < 750 ? 400 : 600,
+                        }}
+                    >
+                        <Canvas columns={16} rows={16} />
+                    </View>
                 </View>
                 <BottomMenu />
+                <RightMenu {...props} />
             </View>
         </CanvasProvider>
     );
