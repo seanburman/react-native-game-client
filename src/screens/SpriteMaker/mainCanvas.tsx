@@ -53,7 +53,7 @@ export default function MainCanvas(props: DrawerScreenProps<any, any>) {
                             width: width < 750 ? 400 : 600,
                         }}
                     >
-                        <Canvas columns={16} rows={16} />
+                        <Canvas columns={32} rows={32} />
                     </View>
                 </View>
                 <BottomMenu />
