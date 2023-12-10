@@ -5,7 +5,7 @@ import { CanvasProvider } from "../../components/Canvas/context";
 import { Canvas } from "../../components/Canvas";
 import CanvasPreview from "../../components/Canvas/preview";
 import { BottomMenu } from "../../components/Canvas/menu/bottom";
-import RightMenu from "../../components/Canvas/menu/right";
+import { RightMenuButton } from "../../components/Canvas/menu/right";
 
 export default function MainCanvas(props: DrawerScreenProps<any, any>) {
     const { width } = useWindowDimensions();
@@ -53,11 +53,11 @@ export default function MainCanvas(props: DrawerScreenProps<any, any>) {
                             width: width < 750 ? 400 : 600,
                         }}
                     >
-                        <Canvas columns={16} rows={16} />
+                        <Canvas columns={32} rows={32} />
                     </View>
                 </View>
                 <BottomMenu />
-                <RightMenu {...props} />
+                <RightMenuButton {...props} />
             </View>
         </CanvasProvider>
     );

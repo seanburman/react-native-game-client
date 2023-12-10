@@ -11,4 +11,6 @@
 - Chat
 
 ### Code
+- Clean up
+-- Default and const exports
 ### Design

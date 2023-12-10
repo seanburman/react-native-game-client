@@ -4,23 +4,17 @@ import {
     PanGestureHandler,
     TapGestureHandler,
 } from "react-native-gesture-handler";
-import { TouchCoords, useCanvas } from "./context";
-import Pixel from "./pixel";
+import { CanvasResolution, TouchCoords, useCanvas } from "./context";
+import PixelLayer from "./pixel";
 
-export interface CanvasProps {
-    columns: number;
-    rows: number;
-}
+export interface CanvasProps extends CanvasResolution {}
 
-export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
-    const {
-        pixels,
-        pixelDimensions,
-        grid,
-        setCanvasResolution,
-        setCanvasLayout,
-        setTouchCoords,
-    } = useCanvas();
+export const Canvas: React.FC<CanvasResolution> = ({
+    columns,
+    rows,
+}: CanvasResolution) => {
+    const { setCanvasResolution, setCanvasLayout, setTouchCoords } =
+        useCanvas();
 
     function handleTouchStop() {
         setTouchCoords(undefined);
@@ -31,8 +25,8 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
     }
 
     useEffect(() => {
-        setCanvasResolution({ columns: props.columns, rows: props.rows });
-    }, [props.columns, props.rows]);
+        setCanvasResolution({ columns: columns, rows: rows });
+    }, [columns, rows]);
 
     return (
         <TapGestureHandler
@@ -77,15 +71,7 @@ export const Canvas: React.FC<CanvasProps> = (props: CanvasProps) => {
                         flexWrap: "wrap",
                     }}
                 >
-                    {pixels?.map((p, i) => (
-                        <Pixel
-                            index={i}
-                            pixelDimensions={pixelDimensions}
-                            color={p.color?.HEX}
-                            grid={grid}
-                            key={i}
-                        />
-                    ))}
+                    <PixelLayer />
                 </View>
             </PanGestureHandler>
         </TapGestureHandler>

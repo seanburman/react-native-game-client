@@ -1,17 +1,50 @@
 import React, {
-    RefObject,
+    MutableRefObject,
     createContext,
     useCallback,
     useContext,
     useEffect,
+    useMemo,
     useRef,
     useState,
 } from "react";
 import { ColorChoice } from "../ColorSelection";
 import { LayoutRectangle } from "react-native";
-import { cloneDeep } from "lodash";
 
-export type PixelProps = {
+export class PixelLayer {
+    public name: string;
+    private state: PixelStateProps[];
+    private history: PixelStateProps[][];
+    private historyIndex: number;
+    constructor(name: string) {
+        this.name = name;
+        this.state = [];
+        this.history = [];
+        this.historyIndex = 0;
+    }
+
+    getState = () => this.state;
+    setState(state: PixelStateProps[]) {
+        this.state = state;
+        this.history = this.history.slice(0, this.historyIndex)
+        this.history.push(state)
+        this.historyIndex = this.history.length - 1
+    }
+
+    getHistory = () => this.history;
+    historyPrev() {
+        if(this.historyIndex === 0) return;
+        this.historyIndex--
+        this.state = this.history[this.historyIndex]
+    }
+    historyNext() {
+        if(this.historyIndex === this.history.length - 1) return;
+        this.historyIndex++
+        this.state = this.history[this.historyIndex]
+    }
+}
+
+export type PixelStateProps = {
     color: ColorChoice | undefined;
 };
 
@@ -40,16 +73,27 @@ type CanvasContextData = {
     canvasResolution: CanvasResolution | undefined;
     // Consumed by useCanvasPixel hook
     pixelDimensions: Dimensions | undefined;
+    // Indicates that canvas is intialized with appropriate dimensions
+    // and ready to accept pixels
+    isReady: boolean;
+    // Indicates that the canvas is empty
+    isEmpty: boolean;
     // Consumed by view rendering pixels
-    pixels: PixelProps[] | undefined;
-    // Insantiated by pixel containing view for reference by context
-    // pixelRefs: Map<number, React.RefObject<View>> | undefined
+    selectedRef: React.MutableRefObject<
+        React.MutableRefObject<PixelStateProps[] | undefined> | undefined
+    >;
+    selectedPixels: PixelStateProps[] | undefined;
+    pixelLayers: React.MutableRefObject<
+        React.MutableRefObject<PixelStateProps[] | undefined>[] | undefined
+    >;
     // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined;
     // Consumed by canvas to toggle grid view
     grid: boolean;
     // To be consumed by future implementations
     touchCoords: TouchCoords | undefined;
+    // Coordinates column and row of last touched pixel
+    pixelTouched: PixelCoords | undefined;
 };
 
 export type CanvasContextState = CanvasContextData & {
@@ -59,10 +103,15 @@ export type CanvasContextState = CanvasContextData & {
     setCanvasLayout: (layout: LayoutRectangle) => void;
     // Set by GestureHandler onGestureEvent
     setTouchCoords: (coords: TouchCoords | undefined) => void;
+    addPixelLayer: (
+        ref: React.MutableRefObject<PixelStateProps[] | undefined>,
+        index: number
+    ) => void;
+    selectPixelLayer: (index: number) => void;
+    movePixelLayer: (prevIndex: number, newIndex: number) => void;
+    clearPixelLayer: () => void;
     // Set by ColorSelection
     setCurrentColor: (color: ColorChoice) => void;
-    // Clears the canvas
-    clearCanvas: () => void;
     // Toggles grid
     setGrid: (on: boolean) => void;
 };
@@ -75,9 +124,19 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
     const [canvasLayout, setCanvasLayout] = useState<LayoutRectangle>();
     const [pixelDimensions, setPixelDimensions] = useState<Dimensions>();
     const [touchCoords, _setTouchCoords] = useState<TouchCoords>();
-    const [pixels, setPixels] = useState<PixelProps[]>();
     const [currentColor, _setCurrentColor] = useState<ColorChoice>();
     const [grid, setGrid] = useState(true);
+    const [isReady, setIsReady] = useState(false);
+    const selectedRef =
+        useRef<MutableRefObject<PixelStateProps[] | undefined>>();
+    const selectedPixels = useMemo(
+        () => selectedRef.current?.current,
+        [selectedRef.current?.current]
+    );
+    const pixelLayers =
+        useRef<MutableRefObject<PixelStateProps[] | undefined>[]>();
+    const [isEmpty, setIsEmpty] = useState(true);
+    const [pixelTouched, setPixelTouched] = useState<PixelCoords>();
 
     const setCanvasResolution = useCallback((resolution: CanvasResolution) => {
         if (resolution.columns < 4 || resolution.rows < 4) {
@@ -88,15 +147,29 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         _setCanvasResolution(resolution);
     }, []);
 
+    const newPixels = useCallback(() => {
+        if (!(canvasResolution && pixelDimensions)) {
+            return;
+        }
+        let newPixels: PixelStateProps[] = [];
+        for (
+            let i = 0;
+            i < canvasResolution.columns * canvasResolution.rows;
+            i++
+        ) {
+            newPixels = [
+                ...newPixels,
+                {
+                    color: undefined,
+                },
+            ];
+        }
+        return newPixels;
+    }, [canvasResolution, pixelDimensions]);
+
     // TouchCoords are set by TapGesture or PanGesture wrapping the containing view
     const setTouchCoords = useCallback(
         (coords: TouchCoords | undefined) => {
-            if (!canvasResolution) {
-                throw new Error(`canvasResolution must be set`);
-            }
-            if (!canvasLayout) {
-                throw new Error(`canvasLayout must be set`);
-            }
             if (!pixelDimensions) {
                 throw new Error(`pixelDimensions not set by CanvasProvider`);
             }
@@ -106,38 +179,91 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
             if (!coords) {
                 return;
             }
-            const touchColumn = Math.floor(coords.x / pixelDimensions.width);
-            const touchRow = Math.floor(coords.y / pixelDimensions.height);
+            const column = Math.floor(coords.x / pixelDimensions.width);
+            const row = Math.floor(coords.y / pixelDimensions.height);
 
             // TODO: Use this for other feedback for user
-            // setIsTouched({
-            //     column: touchColumn,
-            //     row: touchRow
-            // })
+            // setIsTouched({column, row})
             //
-            if (!pixels) {
-                return;
-            }
-            // Update touched pixel
-            const pixelsCopy = cloneDeep(pixels);
 
-            // make sure pan is within bounds of canvas before attempting to update
-            if (
-                touchColumn < canvasResolution.columns &&
-                touchRow < canvasResolution.rows &&
-                touchColumn >= 0 &&
-                touchRow >= 0
-            ) {
-                const index = touchRow * canvasResolution.columns + touchColumn
-                pixelsCopy[
-                    index
-                ].color = currentColor;
-            }
-            setPixels(pixelsCopy);
-
+            drawPixel({ column, row });
         },
-        [canvasResolution, canvasLayout, pixelDimensions, pixels, currentColor]
+        [canvasResolution, canvasLayout, pixelDimensions, currentColor]
     );
+
+    const drawPixel = ({ column, row }: PixelCoords) => {
+        if (!canvasResolution) {
+            throw new Error(`canvasResolution must be set`);
+        }
+        if (!canvasLayout) {
+            throw new Error(`canvasLayout must be set`);
+        }
+        if (!selectedRef.current?.current) {
+            return;
+        }
+
+        // make sure touch coords is within bounds of canvas before attempting to update
+        if (
+            column < canvasResolution.columns &&
+            column >= 0 &&
+            row < canvasResolution.rows &&
+            row >= 0
+        ) {
+            const index = row * canvasResolution.columns + column;
+            selectedRef.current.current[index].color = currentColor;
+            setPixelTouched({ column, row });
+        }
+    };
+
+    const addPixelLayer = useCallback(
+        (
+            ref: React.MutableRefObject<PixelStateProps[] | undefined>,
+            index: number
+        ) => {
+            const emptyPixels = newPixels();
+            if (!emptyPixels) return;
+            if (!pixelLayers.current) {
+                pixelLayers.current = [];
+            }
+            ref.current = emptyPixels;
+            if (emptyPixels) {
+                pixelLayers.current.splice(index, 0, ref);
+            }
+        },
+        [pixelLayers, newPixels]
+    );
+
+    const selectPixelLayer = useCallback(
+        (index: number) => {
+            if (!pixelLayers.current) {
+                throw new Error("pixelLayers is not initialized");
+            }
+            selectedRef.current = pixelLayers.current[index];
+        },
+        [pixelLayers.current, selectedPixels]
+    );
+
+    const movePixelLayer = useCallback(
+        (prevIndex: number, newIndex: number) => {
+            if (!pixelLayers.current) {
+                throw new Error("pixelLayers is not initialized");
+            }
+            pixelLayers.current.splice(
+                newIndex,
+                0,
+                pixelLayers.current.splice(prevIndex, 1)[0]
+            );
+        },
+        []
+    );
+
+    const clearPixelLayer = useCallback(() => {
+        const emptyPixels = newPixels();
+        if (!emptyPixels) return;
+        if (!selectedRef.current) return;
+        selectedRef.current.current = emptyPixels;
+        console.log(selectedRef.current.current);
+    }, [selectedRef.current?.current]);
 
     // Set current selected color by color picker or user input
     const setCurrentColor = useCallback(
@@ -161,28 +287,6 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         [currentColor]
     );
 
-    const clearCanvas = useCallback(() => setPixels(newPixels()), []);
-
-    const newPixels = () => {
-        if (!(canvasResolution && pixelDimensions)) {
-            return;
-        }
-        let newPixels: PixelProps[] = [];
-        for (
-            let i = 0;
-            i < canvasResolution.columns * canvasResolution.rows;
-            i++
-        ) {
-            newPixels = [
-                ...newPixels,
-                {
-                    color: undefined,
-                },
-            ];
-        }
-        return newPixels;
-    };
-
     // Set pixel dimensions as calculated by Canvas containing View
     // and the dimensions of the canvas in pixels
     useEffect(() => {
@@ -195,27 +299,42 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         });
     }, [canvasLayout, canvasResolution]);
 
-    // Create new PixelProps for rendering in containing view
+    // Flag when context is ready to accept pixels
     useEffect(() => {
-        // Don't create new pixels if they already exist
-        if (pixels) {
+        if (pixelDimensions) {
+            setIsReady(true);
+        }
+    }, [pixelDimensions]);
+
+    // Flag if canvas is empty
+    useEffect(() => {
+        if (!pixelLayers.current) {
+            setIsEmpty(true);
             return;
         }
-        setPixels(newPixels());
-    }, [pixels, canvasLayout, canvasResolution, pixelDimensions]);
+        setIsEmpty(false);
+    });
 
     const canvasContextValue: CanvasContextState = {
-        pixels,
-        touchCoords,
         canvasResolution,
         pixelDimensions,
+        isReady,
+        isEmpty,
+        selectedRef,
+        selectedPixels,
+        pixelLayers,
+        touchCoords,
+        pixelTouched,
         currentColor,
         grid,
+        clearPixelLayer,
         setCanvasResolution,
         setCanvasLayout,
         setTouchCoords,
+        addPixelLayer,
+        selectPixelLayer,
+        movePixelLayer,
         setCurrentColor,
-        clearCanvas,
         setGrid,
     };
     return (
@@ -233,4 +352,18 @@ export const useCanvas = () => {
         );
     }
     return context;
+};
+
+export const useCanvasLayer = (
+    ref: React.MutableRefObject<PixelStateProps[] | undefined>
+) => {
+    const { selectedRef, pixelTouched } = useCanvas();
+    const [layerState, setLayerState] = useState(ref.current);
+
+    useEffect(() => {
+        if (selectedRef.current && !(ref == selectedRef.current)) return;
+        setLayerState(ref.current);
+    }, [ref.current, pixelTouched]);
+
+    return layerState;
 };

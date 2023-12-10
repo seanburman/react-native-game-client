@@ -1,13 +1,59 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { View } from "react-native";
-import { Dimensions } from "./context";
+import {
+    Dimensions,
+    PixelStateProps,
+    useCanvas,
+    useCanvasLayer,
+} from "./context";
 
 interface PixelProps {
     pixelDimensions?: Dimensions;
     color?: string;
     grid: boolean;
-    index: number
+    index: number;
 }
+
+const PixelLayer: React.FC<{ index?: number }> = ({ index = 0 }) => {
+    const {
+        isReady,
+        isEmpty,
+        pixelDimensions,
+        grid,
+        addPixelLayer,
+        selectPixelLayer,
+    } = useCanvas();
+    const layerRef = useRef<PixelStateProps[] | undefined>();
+    const layerState = useCanvasLayer(layerRef);
+
+    useEffect(() => {
+        if (!isReady) {
+            return;
+        }
+        addPixelLayer(layerRef, index);
+    }, [isReady]);
+
+    useEffect(() => {
+        if (!isEmpty) {
+            selectPixelLayer(index);
+        }
+    }, [isEmpty]);
+
+    return (
+        <>
+            {layerState &&
+                layerState.map((_, i) => (
+                    <PixelMemo
+                        index={i}
+                        pixelDimensions={pixelDimensions}
+                        color={layerRef!.current![i].color?.HEX}
+                        grid={grid}
+                        key={i}
+                    />
+                ))}
+        </>
+    );
+};
 
 const Pixel: React.FC<PixelProps> = (props: PixelProps) => {
     return (
@@ -23,5 +69,5 @@ const Pixel: React.FC<PixelProps> = (props: PixelProps) => {
         ></View>
     );
 };
-
-export default React.memo(Pixel);
+const PixelMemo = React.memo(Pixel);
+export default PixelLayer;

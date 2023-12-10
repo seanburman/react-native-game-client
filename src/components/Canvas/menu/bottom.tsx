@@ -7,7 +7,7 @@ import { ModalEmpty } from "../../Modal";
 import { ConfirmPrompt } from "../../Modal/prompt";
 
 export const BottomMenu: React.FC = () => {
-    const { pixels, grid, setGrid, clearCanvas } = useCanvas();
+    const { selectedPixels, grid, setGrid, clearPixelLayer } = useCanvas();
     const [colorSelectorOpen, setColorSelectorOpen] = useState(false);
     const [clearModalOpen, setclearModalOpen] = useState(false);
     const [color, setColor] = useState<ColorChoice>({
@@ -21,7 +21,7 @@ export const BottomMenu: React.FC = () => {
     function handleConfirm(confirmed: boolean) {
         setclearModalOpen(false);
         if (confirmed) {
-            clearCanvas();
+            clearPixelLayer();
         }
     }
 
@@ -57,7 +57,7 @@ export const BottomMenu: React.FC = () => {
             <ShadowButtonSmall
                 onPress={handleClear}
                 // If no pixels have color, then canvas is already clear
-                disabled={!pixels?.find((p) => p.color)}
+                disabled={!selectedPixels?.find((p) => p.color)}
             >
                 <Text>Clear</Text>
             </ShadowButtonSmall>
