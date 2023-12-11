@@ -1,49 +1,58 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import {
     Dimensions,
-    PixelLayerState,
-    PixelStateProps,
+    LayerState,
     useCanvas,
-    useCanvasLayer,
 } from "./context";
 
 interface PixelLayerProps {
-    index?: number
-    state: PixelLayerState
+    index?: number;
+    state: LayerState;
 }
-const PixelLayer: React.FC<PixelLayerProps> = ({ index = 0, state}) => {
+const PixelLayer: React.FC<PixelLayerProps> = ({ index = 0, state }) => {
     const {
         isReady,
         isEmpty,
         pixelDimensions,
         grid,
-        addPixelLayer,
-        selectPixelLayer,
+        pixelTouched,
+        selectedLayer,
+        addLayer,
+        selectLayer,
     } = useCanvas();
-    const layerRef = useRef<PixelStateProps[] | undefined>();
-    const layerState = useCanvasLayer(layerRef);
-    state.setState(layerRef.current)
+    const layerRef = useRef(state);
+ 
+    // const [pixels, setPixels] = useState(layerRef.current.state);
+
+    // useEffect(() => {
+    //     if(layerRef.current.state) {
+    //         console.log("pixel state being set")
+    //         console.log(state.state)
+    //     }
+    //     setPixels(layerRef.current.state);
+    //     console.log(selectedLayer.current?.current.state === state.state)
+    // }, [layerRef.current.state, pixelTouched, grid]);
 
     useEffect(() => {
         if (!isReady) return;
-        addPixelLayer(layerRef, index);
+        addLayer(layerRef, index);
     }, [isReady]);
 
     useEffect(() => {
         if (!isEmpty) {
-            selectPixelLayer(index);
+            selectLayer(index);
         }
     }, [isEmpty]);
 
     return (
         <>
-            {layerState &&
-                layerState.map((_, i) => (
+            {layerRef.current &&
+                layerRef.current.state?.map((p, i) => (
                     <PixelMemo
                         index={i}
                         pixelDimensions={pixelDimensions}
-                        color={layerRef!.current![i].color?.HEX}
+                        color={p.color?.HEX}
                         grid={grid}
                         key={i}
                     />

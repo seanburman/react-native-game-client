@@ -5,7 +5,7 @@ import {
     TapGestureHandler,
 } from "react-native-gesture-handler";
 import { CanvasResolution, TouchCoords, useCanvas } from "./context";
-import { PixelLayerState } from "./context";
+import { LayerState } from "./context";
 
 export interface CanvasProps extends CanvasResolution {}
 
@@ -28,7 +28,7 @@ export const Canvas: React.FC<CanvasResolution> = ({
         setCanvasResolution({ columns: columns, rows: rows });
     }, [columns, rows]);
 
-    const Layer = new PixelLayerState('layer one', 0)
+    const Layer = new LayerState('layer one', 0)
 
     return (
         <TapGestureHandler

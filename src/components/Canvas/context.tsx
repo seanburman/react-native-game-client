@@ -1,5 +1,4 @@
 import React, {
-    MutableRefObject,
     ReactElement,
     createContext,
     useCallback,
@@ -17,13 +16,12 @@ export type PixelStateProps = {
     color: ColorChoice | undefined;
 };
 
-export class PixelLayerState {
+export class LayerState {
     public name: string;
-    private state: PixelStateProps[] | undefined
-        | undefined;
+    public state: PixelStateProps[] | undefined;
+    public component: ReactElement;
     private history: PixelStateProps[][];
     private historyIndex: number;
-    public component: ReactElement;
     constructor(name: string, index: number) {
         this.name = name;
         this.history = [];
@@ -32,21 +30,25 @@ export class PixelLayerState {
     }
 
     getState = () => this.state;
-    setState(state: PixelStateProps[] | undefined) {
+    setState(state: PixelStateProps[]) {
         this.state = state;
+        // When updating state, remove trailing history items and continue history
         this.history = this.history.slice(0, this.historyIndex);
-        if (state) {
-            this.history.push(state);
-        }
+        this.history.push(this.state);
         this.historyIndex = this.history.length - 1;
     }
-    
-    clearState() {
-        this.state = []
+    colorPixel(index: number, color: ColorChoice) {
+        if (!this.state) {
+            throw new Error("state not initialized before coloring pixel");
+        }
+        this.state[index].color = color;
+        console.log(this.state[index]);
+        console.log(this.state[index]);
     }
 
     getHistory = () => this.history;
     historyPrev() {
+        // At beginning of history
         if (this.historyIndex === 0) return;
         this.historyIndex--;
         if (this.state) {
@@ -54,6 +56,7 @@ export class PixelLayerState {
         }
     }
     historyNext() {
+        // At end of history
         if (this.historyIndex === this.history.length - 1 || !this.state)
             return;
         this.historyIndex++;
@@ -92,13 +95,11 @@ type CanvasContextData = {
     // Indicates that the canvas is empty
     isEmpty: boolean;
     // Consumed by view rendering pixels
-    selectedRef: React.MutableRefObject<
-        React.MutableRefObject<PixelStateProps[] | undefined> | undefined
+    selectedLayer: React.MutableRefObject<
+        React.MutableRefObject<LayerState> | undefined
     >;
     selectedPixels: PixelStateProps[] | undefined;
-    pixelLayers: React.MutableRefObject<
-        React.MutableRefObject<PixelStateProps[] | undefined>[] | undefined
-    >;
+    layers: React.MutableRefObject<React.MutableRefObject<LayerState>[] | undefined>
     // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined;
     // Consumed by canvas to toggle grid view
@@ -116,13 +117,13 @@ export type CanvasContextState = CanvasContextData & {
     setCanvasLayout: (layout: LayoutRectangle) => void;
     // Set by GestureHandler onGestureEvent
     setTouchCoords: (coords: TouchCoords | undefined) => void;
-    addPixelLayer: (
-        ref: React.MutableRefObject<PixelStateProps[] | undefined>,
+    addLayer: (
+        layerRef: React.MutableRefObject<LayerState>,
         index: number
     ) => void;
-    selectPixelLayer: (index: number) => void;
-    movePixelLayer: (prevIndex: number, newIndex: number) => void;
-    clearPixelLayer: () => void;
+    selectLayer: (index: number) => void;
+    moveLayer: (prevIndex: number, newIndex: number) => void;
+    clearLayer: () => void;
     // Set by ColorSelection
     setCurrentColor: (color: ColorChoice) => void;
     // Toggles grid
@@ -140,14 +141,12 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
     const [currentColor, _setCurrentColor] = useState<ColorChoice>();
     const [grid, setGrid] = useState(true);
     const [isReady, setIsReady] = useState(false);
-    const selectedRef =
-        useRef<MutableRefObject<PixelStateProps[] | undefined>>();
+    const selectedLayer = useRef<React.MutableRefObject<LayerState>>();
     const selectedPixels = useMemo(
-        () => selectedRef.current?.current,
-        [selectedRef.current?.current]
+        () => selectedLayer.current?.current.state,
+        [selectedLayer.current?.current.state]
     );
-    const pixelLayers =
-        useRef<MutableRefObject<PixelStateProps[] | undefined>[]>();
+    const layers = useRef<React.MutableRefObject<LayerState>[]>();
     const [isEmpty, setIsEmpty] = useState(true);
     const [pixelTouched, setPixelTouched] = useState<PixelCoords>();
 
@@ -210,7 +209,7 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         if (!canvasLayout) {
             throw new Error(`canvasLayout must be set`);
         }
-        if (!selectedRef.current?.current) {
+        if (!selectedLayer) {
             return;
         }
 
@@ -222,60 +221,60 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
             row >= 0
         ) {
             const index = row * canvasResolution.columns + column;
-            selectedRef.current.current[index].color = currentColor;
+            console.log(index);
+            if (selectedLayer.current?.current && currentColor) {
+                selectedLayer.current?.current.colorPixel(index, currentColor);
+            }
             setPixelTouched({ column, row });
         }
     };
 
-    const addPixelLayer = useCallback(
-        (
-            ref: React.MutableRefObject<PixelStateProps[] | undefined>,
-            index: number
-        ) => {
+    const addLayer = useCallback(
+        (layerRef: React.MutableRefObject<LayerState>, index: number) => {
             const emptyPixels = newPixels();
             if (!emptyPixels) return;
-            if (!pixelLayers.current) {
-                pixelLayers.current = [];
+            if (!layers.current) {
+                layers.current = [];
             }
-            ref.current = emptyPixels;
             if (emptyPixels) {
-                pixelLayers.current.splice(index, 0, ref);
+                layerRef.current.setState(emptyPixels);
+                layers.current.splice(index, 0, layerRef);
             }
         },
-        [pixelLayers, newPixels]
+        [layers, newPixels]
     );
 
-    const selectPixelLayer = useCallback(
+    const selectLayer = useCallback(
         (index: number) => {
-            if (!pixelLayers.current) {
+            if (!layers.current) {
                 throw new Error("pixelLayers is not initialized");
             }
-            selectedRef.current = pixelLayers.current[index];
+            selectedLayer.current = layers.current[index];
         },
-        [pixelLayers.current, selectedPixels]
+        [layers.current, selectedPixels]
     );
 
-    const movePixelLayer = useCallback(
+    const moveLayer = useCallback(
         (prevIndex: number, newIndex: number) => {
-            if (!pixelLayers.current) {
+            if (!layers.current) {
                 throw new Error("pixelLayers is not initialized");
             }
-            pixelLayers.current.splice(
+            layers.current.splice(
                 newIndex,
                 0,
-                pixelLayers.current.splice(prevIndex, 1)[0]
+                layers.current.splice(prevIndex, 1)[0]
             );
         },
         []
     );
 
-    const clearPixelLayer = useCallback(() => {
+    const clearLayer = useCallback(() => {
         const emptyPixels = newPixels();
         if (!emptyPixels) return;
-        if (!selectedRef.current) return;
-        selectedRef.current.current = emptyPixels;
-        console.log(selectedRef.current.current);
-    }, [selectedRef.current?.current]);
+        if (!selectedLayer) return;
+        selectedLayer.current?.current.setState(emptyPixels);
+        console.log(selectedLayer);
+    }, [selectedLayer]);
 
     // Set current selected color by color picker or user input
     const setCurrentColor = useCallback(
@@ -320,7 +319,7 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
 
     // Flag if canvas is empty
     useEffect(() => {
-        if (!pixelLayers.current) {
+        if (!layers.current) {
             setIsEmpty(true);
             return;
         }
@@ -332,20 +331,20 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         pixelDimensions,
         isReady,
         isEmpty,
-        selectedRef,
+        selectedLayer,
         selectedPixels,
-        pixelLayers,
+        layers,
         touchCoords,
         pixelTouched,
         currentColor,
         grid,
-        clearPixelLayer,
+        clearLayer,
         setCanvasResolution,
         setCanvasLayout,
         setTouchCoords,
-        addPixelLayer,
-        selectPixelLayer,
-        movePixelLayer,
+        addLayer,
+        selectLayer,
+        moveLayer,
         setCurrentColor,
         setGrid,
     };
@@ -366,16 +365,16 @@ export const useCanvas = () => {
     return context;
 };
 
-export const useCanvasLayer = (
-    ref: React.MutableRefObject<PixelStateProps[] | undefined>
-) => {
-    const { selectedRef, pixelTouched, grid } = useCanvas();
-    const [layerState, setLayerState] = useState(ref.current);
+// export const useCanvasLayer = (
+//     ref: React.MutableRefObject<PixelStateProps[] | undefined>
+// ) => {
+//     const { selectedLayer, pixelTouched, grid } = useCanvas();
+//     const [layerState, setLayerState] = useState(ref.current);
 
-    useEffect(() => {
-        if (selectedRef.current && !(ref == selectedRef.current)) return;
-        setLayerState(ref.current);
-    }, [ref.current, pixelTouched, grid]);
+//     useEffect(() => {
+//         if (selectedLayer && !(ref == selectedRef)) return;
+//         setLayerState(ref.current);
+//     }, [ref.current, pixelTouched, grid]);
 
-    return layerState;
-};
+//     return layerState;
+// };
