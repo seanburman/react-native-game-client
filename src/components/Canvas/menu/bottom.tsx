@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import { ShadowButtonSmall } from "../../Buttons";
 import { ColorChoice, ColorSelector } from "../../ColorSelection";
 import { useCanvas } from "../context";
@@ -27,19 +27,23 @@ export const BottomMenu: React.FC = () => {
 
     return (
         <View style={{ flexDirection: "row" }}>
-            <ShadowButtonSmall
+            <Pressable
                 onPress={() => setColorSelectorOpen(!colorSelectorOpen)}
+                style={{
+                    flex: 1,
+                    width: 86,
+                    height: 86,
+                    padding: 10,
+                    overflow: 'hidden',
+                }}
             >
-                <>
-                    <ColorSelector
-                        open={colorSelectorOpen}
-                        close={() => setColorSelectorOpen(false)}
-                        color={color?.HEX || "transparent"}
-                        onChange={setColor}
-                    />
-                    <Text style={{ position: "absolute" }}>Color</Text>
-                </>
-            </ShadowButtonSmall>
+                <ColorSelector
+                    open={colorSelectorOpen}
+                    close={() => setColorSelectorOpen(false)}
+                    color={color?.HEX || "transparent"}
+                    onChange={setColor}
+                />
+            </Pressable>
 
             <ShadowButtonSmall onPress={() => setGrid(!grid)} depress>
                 <Text>Grid</Text>

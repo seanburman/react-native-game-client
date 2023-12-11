@@ -7,13 +7,6 @@ import {
     useCanvasLayer,
 } from "./context";
 
-interface PixelProps {
-    pixelDimensions?: Dimensions;
-    color?: string;
-    grid: boolean;
-    index: number;
-}
-
 const PixelLayer: React.FC<{ index?: number }> = ({ index = 0 }) => {
     const {
         isReady,
@@ -27,9 +20,7 @@ const PixelLayer: React.FC<{ index?: number }> = ({ index = 0 }) => {
     const layerState = useCanvasLayer(layerRef);
 
     useEffect(() => {
-        if (!isReady) {
-            return;
-        }
+        if (!isReady) return;
         addPixelLayer(layerRef, index);
     }, [isReady]);
 
@@ -55,6 +46,12 @@ const PixelLayer: React.FC<{ index?: number }> = ({ index = 0 }) => {
     );
 };
 
+interface PixelProps {
+    pixelDimensions?: Dimensions;
+    color?: string;
+    grid: boolean;
+    index: number;
+}
 const Pixel: React.FC<PixelProps> = (props: PixelProps) => {
     return (
         <View

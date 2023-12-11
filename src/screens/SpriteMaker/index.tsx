@@ -8,14 +8,19 @@ export default function SpriteMaker() {
     const { width } = useWindowDimensions();
     return (
         <Drawer.Navigator
-
             initialRouteName="MainCanvas"
             drawerContent={(props) => <RightMenu {...props} />}
             screenOptions={{
                 drawerType: width < 750 ? "front" : "permanent",
                 drawerPosition: "right",
                 overlayColor: "rgba(0,0,0,0.1)",
-                headerShown: false
+                headerShown: false,
+                drawerStyle: {
+                    borderColor: "#000000",
+                    borderLeftWidth: 1,
+                    paddingTop: 0,
+                    marginTop: -4,
+                },
             }}
         >
             {/* TODO: Layers can use draggable flat list:

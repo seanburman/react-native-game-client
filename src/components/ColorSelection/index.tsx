@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, View } from "react-native";
+import React from "react";
+import { Image, Pressable, View } from "react-native";
 import ColorPicker from "react-native-wheel-color-picker";
 import { useCanvas } from "../Canvas/context";
 import { ModalEmpty } from "../Modal";
@@ -69,23 +69,40 @@ const ColorSelector: React.FC<ColorSelectionProps> = (
                 style={{
                     width: "100%",
                     height: "100%",
-                    borderRadius: 12,
-                    backgroundColor: currentColor?.HEX,
+                    backgroundColor:
+                        !currentColor?.HEX
+                            ? "#FFFFFF"
+                            : currentColor?.HEX,
+                    alignItems: "center",
                 }}
-            />
+            >
+                <Image
+                    source={require("../../../assets/paintbrush.png")}
+                    style={{
+                        width: "70%",
+                        height: "70%",
+                        marginTop: 4,
+                        position: "absolute",
+                        zIndex: 100,
+                    }}
+                />
+                <Image
+                    source={require("../../../assets/button.png")}
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                        zIndex: 0,
+                        // backgroundColor: 'red'
+                    }}
+                />
+            </View>
             <ModalEmpty open={props.open} close={props.close}>
                 <View
                     style={{
                         width: 250,
                         height: 300,
                         padding: 20,
-                        //TODO: extract shadow into a theme
-                        borderColor: "rgba(0,0,0,0.15)",
-                        borderWidth: 1,
-                        shadowColor: "rgba(0,0,0,0.3)",
-                        shadowRadius: 10,
-                        shadowOpacity: 1,
-                        borderRadius: 16,
                         backgroundColor: "white",
                         marginTop: 0,
                     }}

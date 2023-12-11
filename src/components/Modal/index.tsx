@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Pressable } from "react-native";
+import { Modal, Pressable, View } from "react-native";
 
 interface Props {
     open: boolean;
@@ -11,7 +11,6 @@ export const ModalEmpty: React.FC<React.PropsWithChildren<Props>> = ({
     open,
     close,
 }) => {
-
     return (
         <>
             {open && (
@@ -36,7 +35,22 @@ export const ModalEmpty: React.FC<React.PropsWithChildren<Props>> = ({
                         onPressOut={() => {}}
                         onPress={close}
                     >
-                        <Pressable>{children}</Pressable>
+                        <Pressable>
+                            <View
+                                style={{
+                                    borderColor: "rgba(0,0,0,1)",
+                                    borderWidth: 1,
+                                    shadowColor: "rgba(0,0,0,0.3)",
+                                    shadowRadius: 10,
+                                    shadowOpacity: 1,
+                                    borderRadius: 16,
+                                    overflow: "hidden",
+                                    padding: 1,
+                                }}
+                            >
+                                {children}
+                            </View>
+                        </Pressable>
                     </Pressable>
                 </Modal>
             )}

@@ -1,11 +1,12 @@
 import React from "react";
 import { DrawerScreenProps } from "@react-navigation/drawer/lib/typescript/src/types";
-import { View, useWindowDimensions } from "react-native";
+import { Text, View, useWindowDimensions } from "react-native";
 import { CanvasProvider } from "../../components/Canvas/context";
 import { Canvas } from "../../components/Canvas";
 import CanvasPreview from "../../components/Canvas/preview";
 import { BottomMenu } from "../../components/Canvas/menu/bottom";
 import { RightMenuButton } from "../../components/Canvas/menu/right";
+import { PixelButtonWide } from "../../components/Buttons/pixelWide";
 
 export default function MainCanvas(props: DrawerScreenProps<any, any>) {
     const { width } = useWindowDimensions();
@@ -15,15 +16,19 @@ export default function MainCanvas(props: DrawerScreenProps<any, any>) {
             <View
                 style={{
                     width: "100%",
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: "#36BBFF",
                     alignItems: "center",
                     paddingTop: 10,
                 }}
             >
-                <View style={{ width: 400, flexDirection: "row" }}>
-                    <View style={{ flex: 1 }}></View>
+                <View style={{ width: width < 750 ? 400 : 600, flexDirection: "row" }}>
+                    <View style={{ flex: 1 }}>
+                        <PixelButtonWide onPress={() => {}}>
+                            <Text>Save</Text>
+                        </PixelButtonWide>
+                    </View>
                     <View>
-                        <CanvasPreview width={54} height={54} />
+                        {/* <CanvasPreview width={54} height={54} /> */}
                     </View>
                 </View>
             </View>
@@ -32,28 +37,31 @@ export default function MainCanvas(props: DrawerScreenProps<any, any>) {
                     flex: 1,
                     flexDirection: "column",
                     alignItems: "center",
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: "#36BBFF",
                     paddingTop: 10,
                 }}
             >
                 <View
                     style={{
-                        height: width < 750 ? 400 : 600,
-                        width: width < 750 ? 400 : 600,
-                        borderWidth: 1,
-                        borderColor: "rgba(0,0,0,0.4)",
-                        shadowColor: "rgba(0,0,0,0.4)",
-                        shadowRadius: 4,
-                        shadowOpacity: 1,
+                        borderWidth: 2,
+                        borderColor: '#000000'
                     }}
                 >
                     <View
                         style={{
                             height: width < 750 ? 400 : 600,
                             width: width < 750 ? 400 : 600,
+                            backgroundColor: '#FFFFFF',
                         }}
                     >
-                        <Canvas columns={32} rows={32} />
+                        <View
+                            style={{
+                                height: width < 750 ? 400 : 600,
+                                width: width < 750 ? 400 : 600,
+                            }}
+                        >
+                            <Canvas columns={32} rows={32} />
+                        </View>
                     </View>
                 </View>
                 <BottomMenu />

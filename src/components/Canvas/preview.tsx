@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { View } from "react-native";
 import { useCanvas } from "./context";
 
@@ -8,37 +8,43 @@ interface Props {
 }
 
 export default function CanvasPreview({ width, height }: Props) {
-    const { pixels, canvasResolution } = useCanvas();
+    const { selectedPixels, canvasResolution } = useCanvas();
 
     return (
         <View
             style={{
-                width: width + 2,
-                height: height + 2,
-                borderWidth: 1,
-                borderColor: "rgba(0,0,0,0.4)",
+                borderWidth: 2,
+                borderColor: '#000000'
             }}
         >
             <View
                 style={{
-                    flexDirection: "row",
-                    flexWrap: "wrap",
                     width: width,
                     height: height,
+                    backgroundColor: "#c5c7c4",
                 }}
             >
-                {canvasResolution &&
-                    pixels &&
-                    pixels.map((p, i) => (
-                        <View
-                            style={{
-                                width: width / canvasResolution?.columns,
-                                height: height / canvasResolution?.rows,
-                                backgroundColor: p.color?.HEX,
-                            }}
-                            key={i}
-                        />
-                    ))}
+                <View
+                    style={{
+                        flexDirection: "row",
+                        flexWrap: "wrap",
+                        width: width,
+                        height: height,
+                    }}
+                >
+                    {canvasResolution &&
+                        selectedPixels &&
+                        selectedPixels.map((p, i) => (
+                            <View
+                                style={{
+                                    width: width / canvasResolution?.columns,
+                                    height: height / canvasResolution?.rows,
+                                    backgroundColor: p.color?.HEX,
+                                }}
+                                key={i}
+                            />
+                        ))}
+                </View>
             </View>
         </View>
     );

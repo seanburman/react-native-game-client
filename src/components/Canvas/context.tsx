@@ -11,7 +11,7 @@ import React, {
 import { ColorChoice } from "../ColorSelection";
 import { LayoutRectangle } from "react-native";
 
-export class PixelLayer {
+export class PixelLayerState {
     public name: string;
     private state: PixelStateProps[];
     private history: PixelStateProps[][];
@@ -26,21 +26,21 @@ export class PixelLayer {
     getState = () => this.state;
     setState(state: PixelStateProps[]) {
         this.state = state;
-        this.history = this.history.slice(0, this.historyIndex)
-        this.history.push(state)
-        this.historyIndex = this.history.length - 1
+        this.history = this.history.slice(0, this.historyIndex);
+        this.history.push(state);
+        this.historyIndex = this.history.length - 1;
     }
 
     getHistory = () => this.history;
     historyPrev() {
-        if(this.historyIndex === 0) return;
-        this.historyIndex--
-        this.state = this.history[this.historyIndex]
+        if (this.historyIndex === 0) return;
+        this.historyIndex--;
+        this.state = this.history[this.historyIndex];
     }
     historyNext() {
-        if(this.historyIndex === this.history.length - 1) return;
-        this.historyIndex++
-        this.state = this.history[this.historyIndex]
+        if (this.historyIndex === this.history.length - 1) return;
+        this.historyIndex++;
+        this.state = this.history[this.historyIndex];
     }
 }
 
@@ -176,9 +176,8 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
             // console.log(coords)
             // _setTouchCoords(coords)
 
-            if (!coords) {
-                return;
-            }
+            if (!coords) return;
+
             const column = Math.floor(coords.x / pixelDimensions.width);
             const row = Math.floor(coords.y / pixelDimensions.height);
 
@@ -357,13 +356,13 @@ export const useCanvas = () => {
 export const useCanvasLayer = (
     ref: React.MutableRefObject<PixelStateProps[] | undefined>
 ) => {
-    const { selectedRef, pixelTouched } = useCanvas();
+    const { selectedRef, pixelTouched, grid } = useCanvas();
     const [layerState, setLayerState] = useState(ref.current);
 
     useEffect(() => {
         if (selectedRef.current && !(ref == selectedRef.current)) return;
         setLayerState(ref.current);
-    }, [ref.current, pixelTouched]);
+    }, [ref.current, pixelTouched, grid]);
 
     return layerState;
 };
