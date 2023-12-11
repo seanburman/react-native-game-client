@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { ShadowButtonSmall } from "../../Buttons";
 import { ColorChoice, ColorSelector } from "../../ColorSelection";
 import { useCanvas } from "../context";

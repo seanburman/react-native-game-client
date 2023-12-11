@@ -2,12 +2,17 @@ import React, { useEffect, useRef } from "react";
 import { View } from "react-native";
 import {
     Dimensions,
+    PixelLayerState,
     PixelStateProps,
     useCanvas,
     useCanvasLayer,
 } from "./context";
 
-const PixelLayer: React.FC<{ index?: number }> = ({ index = 0 }) => {
+interface PixelLayerProps {
+    index?: number
+    state: PixelLayerState
+}
+const PixelLayer: React.FC<PixelLayerProps> = ({ index = 0, state}) => {
     const {
         isReady,
         isEmpty,
@@ -18,6 +23,7 @@ const PixelLayer: React.FC<{ index?: number }> = ({ index = 0 }) => {
     } = useCanvas();
     const layerRef = useRef<PixelStateProps[] | undefined>();
     const layerState = useCanvasLayer(layerRef);
+    state.setState(layerRef.current)
 
     useEffect(() => {
         if (!isReady) return;
@@ -67,4 +73,5 @@ const Pixel: React.FC<PixelProps> = (props: PixelProps) => {
     );
 };
 const PixelMemo = React.memo(Pixel);
+
 export default PixelLayer;

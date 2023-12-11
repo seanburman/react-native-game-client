@@ -1,5 +1,6 @@
 import React, {
     MutableRefObject,
+    ReactElement,
     createContext,
     useCallback,
     useContext,
@@ -10,43 +11,55 @@ import React, {
 } from "react";
 import { ColorChoice } from "../ColorSelection";
 import { LayoutRectangle } from "react-native";
+import PixelLayer from "./pixel";
+
+export type PixelStateProps = {
+    color: ColorChoice | undefined;
+};
 
 export class PixelLayerState {
     public name: string;
-    private state: PixelStateProps[];
+    private state: PixelStateProps[] | undefined
+        | undefined;
     private history: PixelStateProps[][];
     private historyIndex: number;
-    constructor(name: string) {
+    public component: ReactElement;
+    constructor(name: string, index: number) {
         this.name = name;
-        this.state = [];
         this.history = [];
         this.historyIndex = 0;
+        this.component = <PixelLayer index={index} state={this} />;
     }
 
     getState = () => this.state;
-    setState(state: PixelStateProps[]) {
+    setState(state: PixelStateProps[] | undefined) {
         this.state = state;
         this.history = this.history.slice(0, this.historyIndex);
-        this.history.push(state);
+        if (state) {
+            this.history.push(state);
+        }
         this.historyIndex = this.history.length - 1;
+    }
+    
+    clearState() {
+        this.state = []
     }
 
     getHistory = () => this.history;
     historyPrev() {
         if (this.historyIndex === 0) return;
         this.historyIndex--;
-        this.state = this.history[this.historyIndex];
+        if (this.state) {
+            this.state = this.history[this.historyIndex];
+        }
     }
     historyNext() {
-        if (this.historyIndex === this.history.length - 1) return;
+        if (this.historyIndex === this.history.length - 1 || !this.state)
+            return;
         this.historyIndex++;
         this.state = this.history[this.historyIndex];
     }
 }
-
-export type PixelStateProps = {
-    color: ColorChoice | undefined;
-};
 
 export type CanvasResolution = {
     columns: number;
