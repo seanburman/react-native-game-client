@@ -34,7 +34,7 @@ export const BottomMenu: React.FC = () => {
                     width: 86,
                     height: 86,
                     padding: 10,
-                    overflow: 'hidden',
+                    overflow: "hidden",
                 }}
             >
                 <ColorSelector

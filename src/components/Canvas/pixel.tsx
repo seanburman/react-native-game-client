@@ -1,38 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { View } from "react-native";
-import {
-    Dimensions,
-    LayerState,
-    useCanvas,
-} from "./context";
+import { Dimensions, LayerState, useCanvas } from "./context";
 
 interface PixelLayerProps {
     index?: number;
     state: LayerState;
 }
-const PixelLayer: React.FC<PixelLayerProps> = ({ index = 0, state }) => {
-    const {
-        isReady,
-        isEmpty,
-        pixelDimensions,
-        grid,
-        pixelTouched,
-        selectedLayer,
-        addLayer,
-        selectLayer,
-    } = useCanvas();
-    const layerRef = useRef(state);
- 
-    // const [pixels, setPixels] = useState(layerRef.current.state);
 
-    // useEffect(() => {
-    //     if(layerRef.current.state) {
-    //         console.log("pixel state being set")
-    //         console.log(state.state)
-    //     }
-    //     setPixels(layerRef.current.state);
-    //     console.log(selectedLayer.current?.current.state === state.state)
-    // }, [layerRef.current.state, pixelTouched, grid]);
+const PixelLayer: React.FC<PixelLayerProps> = ({ index = 0, state }) => {
+    const { isReady, isEmpty, pixelDimensions, grid, addLayer, selectLayer } =
+        useCanvas();
+    const layerRef = useRef(state);
 
     useEffect(() => {
         if (!isReady) return;
@@ -46,18 +24,25 @@ const PixelLayer: React.FC<PixelLayerProps> = ({ index = 0, state }) => {
     }, [isEmpty]);
 
     return (
-        <>
+        <View
+        style={{
+            flex: 1,
+            flexDirection: "row",
+            flexWrap: "wrap",
+            position: 'absolute'
+        }}
+        >
             {layerRef.current &&
                 layerRef.current.state?.map((p, i) => (
                     <PixelMemo
                         index={i}
                         pixelDimensions={pixelDimensions}
                         color={p.color?.HEX}
-                        grid={grid}
+                        grid={index === 0 ? grid : false}
                         key={i}
                     />
                 ))}
-        </>
+        </View>
     );
 };
 
@@ -73,7 +58,7 @@ const Pixel: React.FC<PixelProps> = (props: PixelProps) => {
             style={{
                 width: props.pixelDimensions?.width,
                 height: props.pixelDimensions?.height,
-                backgroundColor: props.color,
+                backgroundColor: props.color ? props.color : "transparent",
                 borderBottomWidth: props.grid ? 1 : 0,
                 borderRightWidth: props.grid ? 1 : 0,
                 borderColor: "rgba(0,0,0,.25)",

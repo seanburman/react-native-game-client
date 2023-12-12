@@ -28,7 +28,9 @@ export const Canvas: React.FC<CanvasResolution> = ({
         setCanvasResolution({ columns: columns, rows: rows });
     }, [columns, rows]);
 
-    const Layer = new LayerState('layer one', 0)
+    const Layer = new LayerState('layer 1', 0)
+    const Layer2 = new LayerState('layer 2', 1)
+    const Layer3 = new LayerState('layer 3', 2)
 
     return (
         <TapGestureHandler
@@ -75,6 +77,12 @@ export const Canvas: React.FC<CanvasResolution> = ({
                 >
                     {
                         Layer.component
+                    }
+                    {
+                        Layer2.component
+                    }
+                    {
+                        Layer3.component
                     }
                 </View>
             </PanGestureHandler>

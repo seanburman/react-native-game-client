@@ -42,8 +42,6 @@ export class LayerState {
             throw new Error("state not initialized before coloring pixel");
         }
         this.state[index].color = color;
-        console.log(this.state[index]);
-        console.log(this.state[index]);
     }
 
     getHistory = () => this.history;
@@ -99,7 +97,9 @@ type CanvasContextData = {
         React.MutableRefObject<LayerState> | undefined
     >;
     selectedPixels: PixelStateProps[] | undefined;
-    layers: React.MutableRefObject<React.MutableRefObject<LayerState>[] | undefined>
+    layers: React.MutableRefObject<
+        React.MutableRefObject<LayerState>[] | undefined
+    >;
     // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined;
     // Consumed by canvas to toggle grid view
@@ -172,7 +172,13 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
             newPixels = [
                 ...newPixels,
                 {
-                    color: undefined,
+                    color: {
+                        HEX: "transparent",
+                        RGBA: {
+                            r: 0, g: 0, b: 0, a: 0,
+                            string: 'rgba(0,0,0,0)'
+                        }
+                    },
                 },
             ];
         }
@@ -221,7 +227,6 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
             row >= 0
         ) {
             const index = row * canvasResolution.columns + column;
-            console.log(index);
             if (selectedLayer.current?.current && currentColor) {
                 selectedLayer.current?.current.colorPixel(index, currentColor);
             }
@@ -254,27 +259,23 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         [layers.current, selectedPixels]
     );
 
-    const moveLayer = useCallback(
-        (prevIndex: number, newIndex: number) => {
-            if (!layers.current) {
-                throw new Error("pixelLayers is not initialized");
-            }
-            layers.current.splice(
-                newIndex,
-                0,
-                layers.current.splice(prevIndex, 1)[0]
-            );
-        },
-        []
-    );
+    const moveLayer = useCallback((prevIndex: number, newIndex: number) => {
+        if (!layers.current) {
+            throw new Error("pixelLayers is not initialized");
+        }
+        layers.current.splice(
+            newIndex,
+            0,
+            layers.current.splice(prevIndex, 1)[0]
+        );
+    }, []);
 
     const clearLayer = useCallback(() => {
         const emptyPixels = newPixels();
         if (!emptyPixels) return;
         if (!selectedLayer) return;
         selectedLayer.current?.current.setState(emptyPixels);
-        console.log(selectedLayer);
-    }, [selectedLayer]);
+    }, [selectedLayer.current?.current, newPixels]);
 
     // Set current selected color by color picker or user input
     const setCurrentColor = useCallback(
@@ -364,17 +365,3 @@ export const useCanvas = () => {
     }
     return context;
 };
-
-// export const useCanvasLayer = (
-//     ref: React.MutableRefObject<PixelStateProps[] | undefined>
-// ) => {
-//     const { selectedLayer, pixelTouched, grid } = useCanvas();
-//     const [layerState, setLayerState] = useState(ref.current);
-
-//     useEffect(() => {
-//         if (selectedLayer && !(ref == selectedRef)) return;
-//         setLayerState(ref.current);
-//     }, [ref.current, pixelTouched, grid]);
-
-//     return layerState;
-// };
