@@ -4,18 +4,24 @@ import {
     PanGestureHandler,
     TapGestureHandler,
 } from "react-native-gesture-handler";
-import { CanvasResolution, TouchCoords, useCanvas } from "./context";
-import { LayerState } from "./context";
+import { useCanvas } from "./context/canvas.context";
+import { CanvasResolution, TouchCoords } from "../../types/canvas.type";
+import Pixel from "./components/pixel.component";
 
-export interface CanvasProps extends CanvasResolution {}
+export type CanvasProps = CanvasResolution & {
+};
+export const Canvas: React.FC<CanvasProps> = ({ columns, rows}) => {
+    const {
+        setCanvasResolution,
+        setCanvasLayout,
+        setTouchCoords,
+        layers,
+        selectedLayer,
+        pixelDimensions,
+        grid,
+    } = useCanvas();
 
-export const Canvas: React.FC<CanvasResolution> = ({
-    columns,
-    rows,
-}: CanvasResolution) => {
-    const { setCanvasResolution, setCanvasLayout, setTouchCoords } =
-        useCanvas();
-
+    console.log(pixelDimensions)
     function handleTouchStop() {
         setTouchCoords(undefined);
     }
@@ -27,10 +33,6 @@ export const Canvas: React.FC<CanvasResolution> = ({
     useEffect(() => {
         setCanvasResolution({ columns: columns, rows: rows });
     }, [columns, rows]);
-
-    const Layer = new LayerState('layer 1', 0)
-    const Layer2 = new LayerState('layer 2', 1)
-    const Layer3 = new LayerState('layer 3', 2)
 
     return (
         <TapGestureHandler
@@ -75,15 +77,29 @@ export const Canvas: React.FC<CanvasResolution> = ({
                         flexWrap: "wrap",
                     }}
                 >
-                    {
-                        Layer.component
-                    }
-                    {
-                        Layer2.component
-                    }
-                    {
-                        Layer3.component
-                    }
+                    {layers.map((layer, i) => (
+                            <View
+                                style={{
+                                    flex: 1,
+                                    flexDirection: "row",
+                                    flexWrap: "wrap",
+                                    position: "absolute",
+                                    zIndex: layer.state.index * -100 || 0,
+                                }}
+                                key={i}
+                            >
+                                {layer.state.pixels.map((p, i) => (
+                                    <Pixel
+                                        index={i}
+                                        pixelDimensions={pixelDimensions}
+                                        color={p.color?.HEX}
+                                        // color={"red"}
+                                        grid={(layer.state.index === selectedLayer && grid)}
+                                        key={i}
+                                    />
+                                ))}
+                            </View>
+                        ))}
                 </View>
             </PanGestureHandler>
         </TapGestureHandler>

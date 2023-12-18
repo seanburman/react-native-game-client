@@ -3,7 +3,7 @@ import { SafeAreaView, StyleSheet } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "./src/redux/store";
 import { NavigationContainer } from "@react-navigation/native";
-import Tabs from "./src/navigation/Tabs";
+import Tabs from "./src/navigation/tabs.navigation";
 
 export default function App() {
     return (

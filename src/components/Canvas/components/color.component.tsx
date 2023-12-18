@@ -1,21 +1,9 @@
 import React from "react";
 import { Image, Pressable, View } from "react-native";
 import ColorPicker from "react-native-wheel-color-picker";
-import { useCanvas } from "../Canvas/context";
-import { ModalEmpty } from "../Modal";
-
-export type RGBA = {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-    string: string;
-};
-
-export type ColorChoice = {
-    RGBA: RGBA;
-    HEX: string;
-};
+import { useCanvas } from "../context/canvas.context";
+import { ModalEmpty } from "../../Modal/modal";
+import { ColorChoice } from "../../../types/canvas.type";
 
 export function parseColorChoice(hex: string) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -77,7 +65,7 @@ const ColorSelector: React.FC<ColorSelectionProps> = (
                 }}
             >
                 <Image
-                    source={require("../../../assets/paintbrush.png")}
+                    source={require("../../../../assets/paintbrush.png")}
                     style={{
                         width: "70%",
                         height: "70%",
@@ -87,7 +75,7 @@ const ColorSelector: React.FC<ColorSelectionProps> = (
                     }}
                 />
                 <Image
-                    source={require("../../../assets/button.png")}
+                    source={require("../../../../assets/button.png")}
                     style={{
                         width: "100%",
                         height: "100%",

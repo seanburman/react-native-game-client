@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { useCanvas } from "./context";
+import { useCanvas } from "../context/canvas.context";
 
 interface Props {
     width: number;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function CanvasPreview({ width, height }: Props) {
-    const { selectedPixels, canvasResolution } = useCanvas();
+    // const { selectedLayer, canvasResolution } = useCanvas();
 
     return (
         <View
@@ -32,9 +32,9 @@ export default function CanvasPreview({ width, height }: Props) {
                         height: height,
                     }}
                 >
-                    {canvasResolution &&
-                        selectedPixels &&
-                        selectedPixels.map((p, i) => (
+                    {/* {canvasResolution &&
+                        selectedLayer &&
+                        selectedLayer.current?.current.map((p, i) => (
                             <View
                                 style={{
                                     width: width / canvasResolution?.columns,
@@ -43,7 +43,7 @@ export default function CanvasPreview({ width, height }: Props) {
                                 }}
                                 key={i}
                             />
-                        ))}
+                        ))} */}
                 </View>
             </View>
         </View>

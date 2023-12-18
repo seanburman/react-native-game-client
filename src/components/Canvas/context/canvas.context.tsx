@@ -1,113 +1,35 @@
 import React, {
-    ReactElement,
     createContext,
     useCallback,
     useContext,
     useEffect,
-    useMemo,
-    useRef,
     useState,
 } from "react";
-import { ColorChoice } from "../ColorSelection";
 import { LayoutRectangle } from "react-native";
-import PixelLayer from "./pixel";
-
-export type PixelStateProps = {
-    color: ColorChoice | undefined;
-};
-
-export class LayerState {
-    public name: string;
-    public state: PixelStateProps[] | undefined;
-    public component: ReactElement;
-    private history: PixelStateProps[][];
-    private historyIndex: number;
-    constructor(name: string, index: number) {
-        this.name = name;
-        this.history = [];
-        this.historyIndex = 0;
-        this.component = <PixelLayer index={index} state={this} />;
-    }
-
-    getState = () => this.state;
-    setState(state: PixelStateProps[]) {
-        this.state = state;
-        // When updating state, remove trailing history items and continue history
-        this.history = this.history.slice(0, this.historyIndex);
-        this.history.push(this.state);
-        this.historyIndex = this.history.length - 1;
-    }
-    colorPixel(index: number, color: ColorChoice) {
-        if (!this.state) {
-            throw new Error("state not initialized before coloring pixel");
-        }
-        this.state[index].color = color;
-    }
-
-    getHistory = () => this.history;
-    historyPrev() {
-        // At beginning of history
-        if (this.historyIndex === 0) return;
-        this.historyIndex--;
-        if (this.state) {
-            this.state = this.history[this.historyIndex];
-        }
-    }
-    historyNext() {
-        // At end of history
-        if (this.historyIndex === this.history.length - 1 || !this.state)
-            return;
-        this.historyIndex++;
-        this.state = this.history[this.historyIndex];
-    }
-}
-
-export type CanvasResolution = {
-    columns: number;
-    rows: number;
-};
-
-export type Dimensions = {
-    width: number;
-    height: number;
-};
-
-export type TouchCoords = {
-    x: number;
-    y: number;
-};
-
-export type PixelCoords = {
-    column: number;
-    row: number;
-};
+import {
+    CanvasResolution,
+    ColorChoice,
+    Dimensions,
+    PixelCoords,
+    PixelStateProps,
+    TouchCoords,
+} from "../../../types/canvas.type";
+import { Layer } from "./layer.context";
+import { indexOf } from "lodash";
 
 type CanvasContextData = {
-    // Consumed by useCanvasPixel hook
     canvasResolution: CanvasResolution | undefined;
-    // Consumed by useCanvasPixel hook
     pixelDimensions: Dimensions | undefined;
-    // Indicates that canvas is intialized with appropriate dimensions
-    // and ready to accept pixels
-    isReady: boolean;
-    // Indicates that the canvas is empty
-    isEmpty: boolean;
-    // Consumed by view rendering pixels
-    selectedLayer: React.MutableRefObject<
-        React.MutableRefObject<LayerState> | undefined
-    >;
-    selectedPixels: PixelStateProps[] | undefined;
-    layers: React.MutableRefObject<
-        React.MutableRefObject<LayerState>[] | undefined
-    >;
-    // Consumed by useCanvasPixel hook
     currentColor: ColorChoice | undefined;
     // Consumed by canvas to toggle grid view
     grid: boolean;
     // To be consumed by future implementations
     touchCoords: TouchCoords | undefined;
-    // Coordinates column and row of last touched pixel
-    pixelTouched: PixelCoords | undefined;
+    // Indicates that canvas is intialized with appropriate dimensions
+    // and ready to accept pixels
+    isReady: boolean;
+    layers: Layer[];
+    selectedLayer: number;
 };
 
 export type CanvasContextState = CanvasContextData & {
@@ -116,18 +38,15 @@ export type CanvasContextState = CanvasContextData & {
     // Set with onLayout by View containing pixels
     setCanvasLayout: (layout: LayoutRectangle) => void;
     // Set by GestureHandler onGestureEvent
-    setTouchCoords: (coords: TouchCoords | undefined) => void;
-    addLayer: (
-        layerRef: React.MutableRefObject<LayerState>,
-        index: number
-    ) => void;
-    selectLayer: (index: number) => void;
-    moveLayer: (prevIndex: number, newIndex: number) => void;
-    clearLayer: () => void;
     // Set by ColorSelection
     setCurrentColor: (color: ColorChoice) => void;
     // Toggles grid
     setGrid: (on: boolean) => void;
+    setTouchCoords: (coords: TouchCoords | undefined) => void;
+    addLayer: (layer: Layer) => void;
+    selectLayer: (index: number) => void;
+    sortLayers: (items: Layer[]) => void;
+    clearLayer: (index: number) => void;
 };
 
 const CanvasContext = createContext<CanvasContextState | undefined>(undefined);
@@ -141,19 +60,13 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
     const [currentColor, _setCurrentColor] = useState<ColorChoice>();
     const [grid, setGrid] = useState(true);
     const [isReady, setIsReady] = useState(false);
-    const selectedLayer = useRef<React.MutableRefObject<LayerState>>();
-    const selectedPixels = useMemo(
-        () => selectedLayer.current?.current.state,
-        [selectedLayer.current?.current.state]
-    );
-    const layers = useRef<React.MutableRefObject<LayerState>[]>();
-    const [isEmpty, setIsEmpty] = useState(true);
-    const [pixelTouched, setPixelTouched] = useState<PixelCoords>();
+    const [layers, setLayers] = useState<Layer[]>([]);
+    const [selectedLayer, setSelectedLayer] = useState(0);
 
     const setCanvasResolution = useCallback((resolution: CanvasResolution) => {
-        if (resolution.columns < 4 || resolution.rows < 4) {
+        if (resolution.columns < 8 || resolution.rows < 8) {
             throw new Error(
-                "CanvasResolution must be at least 4 width and 4 height"
+                "CanvasResolution must be at least 8 width and 8 height"
             );
         }
         _setCanvasResolution(resolution);
@@ -175,9 +88,12 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
                     color: {
                         HEX: "transparent",
                         RGBA: {
-                            r: 0, g: 0, b: 0, a: 0,
-                            string: 'rgba(0,0,0,0)'
-                        }
+                            r: 0,
+                            g: 0,
+                            b: 0,
+                            a: 0,
+                            string: "rgba(0,0,0,0)",
+                        },
                     },
                 },
             ];
@@ -215,7 +131,7 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         if (!canvasLayout) {
             throw new Error(`canvasLayout must be set`);
         }
-        if (!selectedLayer) {
+        if (!layers[selectedLayer]) {
             return;
         }
 
@@ -227,55 +143,59 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
             row >= 0
         ) {
             const index = row * canvasResolution.columns + column;
-            if (selectedLayer.current?.current && currentColor) {
-                selectedLayer.current?.current.colorPixel(index, currentColor);
+            if (currentColor && layers[selectedLayer]) {
+                layers[selectedLayer].colorPixel(index, currentColor);
+                setLayers((prev) => [...prev])
             }
-            setPixelTouched({ column, row });
         }
     };
 
     const addLayer = useCallback(
-        (layerRef: React.MutableRefObject<LayerState>, index: number) => {
+        (layer: Layer) => {
             const emptyPixels = newPixels();
             if (!emptyPixels) return;
-            if (!layers.current) {
-                layers.current = [];
-            }
-            if (emptyPixels) {
-                layerRef.current.setState(emptyPixels);
-                layers.current.splice(index, 0, layerRef);
-            }
+            layer.setPixels(emptyPixels);
+            // Update order of layer states and components
+            setSelectedLayer(0)
+            setLayers((prev) => [layer, ...prev]);
         },
         [layers, newPixels]
     );
 
     const selectLayer = useCallback(
         (index: number) => {
-            if (!layers.current) {
-                throw new Error("pixelLayers is not initialized");
+            if (layers.length === 0) {
+                setLayers([new Layer(0, "New Layer")]);
             }
-            selectedLayer.current = layers.current[index];
+            setSelectedLayer(index);
         },
-        [layers.current, selectedPixels]
+        [layers]
     );
 
-    const moveLayer = useCallback((prevIndex: number, newIndex: number) => {
-        if (!layers.current) {
-            throw new Error("pixelLayers is not initialized");
-        }
-        layers.current.splice(
-            newIndex,
-            0,
-            layers.current.splice(prevIndex, 1)[0]
-        );
-    }, []);
+    const sortLayers = useCallback(
+        (items: Layer[]) => {
+            setLayers(
+                items.map((item, i) => {
+                    if(item.state.index === selectedLayer) {
+                        setSelectedLayer(i)
+                    }
+                    item.setIndex(i);
+                    return item;
+                })
+            );
+        },
+        [layers]
+    );
 
-    const clearLayer = useCallback(() => {
-        const emptyPixels = newPixels();
-        if (!emptyPixels) return;
-        if (!selectedLayer) return;
-        selectedLayer.current?.current.setState(emptyPixels);
-    }, [selectedLayer.current?.current, newPixels]);
+    const clearLayer = useCallback(
+        (index: number) => {
+            const emptyPixels = newPixels();
+            if (!emptyPixels || !layers[index]) return;
+            layers[index].setPixels(emptyPixels);
+            setLayers((prev) => [...prev])
+        },
+        [layers, newPixels]
+    );
 
     // Set current selected color by color picker or user input
     const setCurrentColor = useCallback(
@@ -318,36 +238,30 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
         }
     }, [pixelDimensions]);
 
-    // Flag if canvas is empty
     useEffect(() => {
-        if (!layers.current) {
-            setIsEmpty(true);
-            return;
+        if(layers.length === 0) {
+            addLayer(new Layer(0, "New Layer"))
         }
-        setIsEmpty(false);
-    });
+    },[layers, newPixels])
 
     const canvasContextValue: CanvasContextState = {
         canvasResolution,
         pixelDimensions,
-        isReady,
-        isEmpty,
-        selectedLayer,
-        selectedPixels,
-        layers,
-        touchCoords,
-        pixelTouched,
         currentColor,
         grid,
-        clearLayer,
+        touchCoords,
+        isReady,
+        layers,
+        selectedLayer,
         setCanvasResolution,
         setCanvasLayout,
+        setCurrentColor,
+        setGrid,
         setTouchCoords,
         addLayer,
         selectLayer,
-        moveLayer,
-        setCurrentColor,
-        setGrid,
+        sortLayers,
+        clearLayer,
     };
     return (
         <CanvasContext.Provider value={canvasContextValue}>
@@ -358,6 +272,7 @@ export function CanvasProvider({ children }: React.PropsWithChildren) {
 
 export const useCanvas = () => {
     const context = useContext(CanvasContext);
+
     if (!context) {
         throw new Error(
             "useCanvas must be used within a CanvasContext provider"
@@ -365,3 +280,54 @@ export const useCanvas = () => {
     }
     return context;
 };
+
+// export class LayerState {
+//     public name: string;
+//     public index: number;
+//     public state: PixelStateProps[] | undefined;
+//     public component: ReactElement;
+//     private history: PixelStateProps[][];
+//     private historyIndex: number;
+//     constructor(name: string, index: number) {
+//         this.name = name;
+//         this.index = index;
+//         this.component = <PixelLayer index={this.index} state={this}/>;
+//         this.history = [];
+//         this.historyIndex = 0;
+//     }
+
+//     setIndex(index: number) {
+//         this.index = index;
+//     }
+
+//     setState(state: PixelStateProps[]) {
+//         this.state = state;
+//         // When updating state, remove trailing history items and continue history
+//         this.history = this.history.slice(0, this.historyIndex);
+//         this.history.push(this.state);
+//         this.historyIndex = this.history.length - 1;
+//     }
+//     colorPixel(index: number, color: ColorChoice) {
+//         if (!this.state) {
+//             throw new Error("state not initialized before coloring pixel");
+//         }
+//         this.state[index].color = color;
+//     }
+
+//     getHistory = () => this.history;
+//     historyPrev() {
+//         // At beginning of history
+//         if (this.historyIndex === 0) return;
+//         this.historyIndex--;
+//         if (this.state) {
+//             this.state = this.history[this.historyIndex];
+//         }
+//     }
+//     historyNext() {
+//         // At end of history
+//         if (this.historyIndex === this.history.length - 1 || !this.state)
+//             return;
+//         this.historyIndex++;
+//         this.state = this.history[this.historyIndex];
+//     }
+// }

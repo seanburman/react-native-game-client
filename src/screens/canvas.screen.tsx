@@ -1,18 +1,15 @@
 import React from "react";
 import { DrawerScreenProps } from "@react-navigation/drawer/lib/typescript/src/types";
 import { Text, View, useWindowDimensions } from "react-native";
-import { CanvasProvider } from "../../components/Canvas/context";
-import { Canvas } from "../../components/Canvas";
-import CanvasPreview from "../../components/Canvas/preview";
-import { BottomMenu } from "../../components/Canvas/menu/bottom";
-import { RightMenuButton } from "../../components/Canvas/menu/right";
-import { PixelButtonWide } from "../../components/Buttons/pixelWide";
+import { Canvas } from "../components/Canvas/canvas";
+import { BottomMenu } from "../components/Canvas/menu/bottom.menu";
+import { RightMenuButton } from "../components/Canvas/menu/right.content.menu";
+import { PixelButtonWide } from "../components/Buttons/pixelWide";
 
-export default function MainCanvas(props: DrawerScreenProps<any, any>) {
+export default function CanvasScreen(props: DrawerScreenProps<any, any>) {
     const { width } = useWindowDimensions();
-
     return (
-        <CanvasProvider>
+        <>
             <View
                 style={{
                     width: "100%",
@@ -60,13 +57,13 @@ export default function MainCanvas(props: DrawerScreenProps<any, any>) {
                                 width: width < 750 ? 400 : 600,
                             }}
                         >
-                            <Canvas columns={32} rows={32} />
+                            <Canvas columns={32} rows={32}/>
                         </View>
                     </View>
                 </View>
                 <BottomMenu />
                 <RightMenuButton {...props} />
             </View>
-        </CanvasProvider>
+        </>
     );
 }

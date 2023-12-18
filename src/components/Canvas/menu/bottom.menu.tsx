@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { ShadowButtonSmall } from "../../Buttons";
-import { ColorChoice, ColorSelector } from "../../ColorSelection";
-import { useCanvas } from "../context";
-import { ModalEmpty } from "../../Modal";
+import { ShadowButtonSmall } from "../../Buttons/buttons";
+import { ColorSelector } from "../components/color.component";
+import { useCanvas } from "../context/canvas.context";
+import { ModalEmpty } from "../../Modal/modal";
 import { ConfirmPrompt } from "../../Modal/prompt";
+import { ColorChoice } from "../../../types/canvas.type";
 
 export const BottomMenu: React.FC = () => {
-    const { selectedPixels, grid, setGrid, clearLayer } = useCanvas();
+    const { layers, selectedLayer, grid, setGrid, clearLayer } = useCanvas();
     const [colorSelectorOpen, setColorSelectorOpen] = useState(false);
     const [clearModalOpen, setclearModalOpen] = useState(false);
     const [color, setColor] = useState<ColorChoice>({
@@ -21,7 +22,7 @@ export const BottomMenu: React.FC = () => {
     function handleConfirm(confirmed: boolean) {
         setclearModalOpen(false);
         if (confirmed) {
-            clearLayer();
+            clearLayer(selectedLayer);
         }
     }
 
@@ -58,13 +59,19 @@ export const BottomMenu: React.FC = () => {
                     onChange={handleConfirm}
                 />
             </ModalEmpty>
-            <ShadowButtonSmall
-                onPress={handleClear}
-                // If no pixels have color, then canvas is already clear
-                disabled={!selectedPixels?.find((p) => p.color)}
-            >
-                <Text>Clear</Text>
-            </ShadowButtonSmall>
+            {layers.length > 0 && (
+                <ShadowButtonSmall
+                    onPress={handleClear}
+                    // If no pixels have color, then canvas is already clear
+                    disabled={
+                        !layers[selectedLayer].state.pixels.find(
+                            (p) => p.color?.HEX !== "transparent"
+                        )
+                    }
+                >
+                    <Text>Clear</Text>
+                </ShadowButtonSmall>
+            )}
 
             {/* <Palette
             colors={palette}

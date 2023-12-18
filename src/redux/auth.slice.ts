@@ -1,4 +1,4 @@
-import { apiSlice } from ".";
+import { apiSlice } from "./api.slice";
 export const authSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         authenticateGame: builder.mutation({

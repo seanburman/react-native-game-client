@@ -4,9 +4,9 @@ import { WebView } from "react-native-webview";
 import {
     useAuthenticateGameMutation,
     useCreateGameSessionMutation,
-} from "../../redux/authSlice";
+} from "../redux/auth.slice";
 import { Provider } from "react-redux";
-import { store } from "../../redux/store";
+import { store } from "../redux/store";
 
 export default function Game() {
     const [authenticate, authRes] = useAuthenticateGameMutation();
